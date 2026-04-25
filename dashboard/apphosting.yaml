@@ -1,0 +1,37 @@
+runConfig:
+  minInstances: 0
+  maxInstances: 2
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+
+env:
+  - variable: NEXT_PUBLIC_API_URL
+    value: http://localhost:8000
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_SUPABASE_URL
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_POSTHOG_KEY
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_POSTHOG_HOST
+    value: https://app.posthog.com
+    availability:
+      - BUILD
+      - RUNTIME

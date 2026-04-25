@@ -3,7 +3,7 @@ import type { Article } from "@/lib/types"
 import ArticleCard from "@/components/feed/ArticleCard"
 import { SOURCE_LABELS, TOPIC_LABELS } from "@/lib/utils"
 
-export const revalidate = 300
+export const dynamic = "force-dynamic"
 
 interface Props { searchParams: Promise<{ source?: string; topic?: string }> }
 
