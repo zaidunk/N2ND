@@ -5,14 +5,13 @@ import { BPS_INDICATORS, POVERTY_TREND, UNEMPLOYMENT_TREND, GDP_TREND, INFLATION
 import type { Article, MarketData } from "@/lib/types"
 
 export const dynamic = "force-dynamic"
-export const revalidate = 0
 
 const RSS_SOURCES = [
-  { id: "antara",  url: "https://www.antaranews.com/rss/terkini.xml",  lang: "id" },
-  { id: "kompas",  url: "https://rss.kompas.com/rss/xml/tag/topheadlines", lang: "id" },
-  { id: "tempo",   url: "https://rss.tempo.co/",                      lang: "id" },
-  { id: "reuters", url: "https://feeds.reuters.com/reuters/topNews",  lang: "en" },
-  { id: "bbc",     url: "http://feeds.bbci.co.uk/news/rss.xml",       lang: "en" },
+  { id: "antara",     url: "https://www.antaranews.com/rss/terkini.xml",      lang: "id" },
+  { id: "detik",      url: "https://rss.detik.com/index.php/detikcom",        lang: "id" },
+  { id: "tempo",      url: "https://rss.tempo.co/",                           lang: "id" },
+  { id: "aljazeera",  url: "https://www.aljazeera.com/xml/rss/all.xml",       lang: "en" },
+  { id: "bbc",        url: "https://feeds.bbci.co.uk/news/rss.xml",           lang: "en" },
 ]
 
 function parseRSS(xml: string, sourceId: string, lang: string): Article[] {

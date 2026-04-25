@@ -1,5 +1,3 @@
-"use client"
-
 import type { TrendPoint } from "@/lib/types"
 
 interface Series {
@@ -16,13 +14,12 @@ interface Props {
 }
 
 function buildPath(points: TrendPoint[], minY: number, maxY: number, w: number, h: number): string {
-  const pad = { t: 8, b: 20, l: 0, r: 0 }
-  const chartW = w - pad.l - pad.r
+  const pad = { t: 8, b: 20 }
   const chartH = h - pad.t - pad.b
   const rangeY = maxY - minY || 1
 
   const coords = points.map((p, i) => {
-    const x = pad.l + (i / (points.length - 1)) * chartW
+    const x = (i / (points.length - 1)) * w
     const y = pad.t + (1 - (p.value - minY) / rangeY) * chartH
     return [x, y] as [number, number]
   })
@@ -59,8 +56,7 @@ export default function TrendChart({ title, series, width = 460, height = 180 }:
             fill="none" stroke={s.color} strokeWidth={2} strokeLinecap="round"
           />
         ))}
-        {/* x-axis labels */}
-        {years.filter((_, i) => i % 2 === 0).map((y, i) => {
+        {years.filter((_, i) => i % 2 === 0).map(y => {
           const idx = years.indexOf(y)
           const x = (idx / (years.length - 1)) * width
           return (
