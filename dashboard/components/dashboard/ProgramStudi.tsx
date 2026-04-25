@@ -1,0 +1,119 @@
+"use client"
+import { useState, useMemo } from "react"
+import { PRODI_DATA } from "@/lib/prodi-data"
+import GptButton from "@/components/ui/GptButton"
+
+const FACULTY_COLORS: Record<string, string> = {
+  "Ekonomi & Bisnis":       "text-amber-400 bg-amber-500/10 border-amber-500/20",
+  "Teknik & Sains":         "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  "Sosial & Humaniora":     "text-purple-400 bg-purple-500/10 border-purple-500/20",
+  "Kesehatan & Biologi":    "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+  "Seni, Desain & Media":   "text-pink-400 bg-pink-500/10 border-pink-500/20",
+  "Pertanian & Sumber Daya":"text-lime-400 bg-lime-500/10 border-lime-500/20",
+  "Pendidikan & Sosial Lain":"text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+}
+
+export default function ProgramStudi() {
+  const [q, setQ] = useState("")
+  const [open, setOpen] = useState<string | null>(null)
+
+  const filtered = useMemo(() => {
+    const lower = q.toLowerCase()
+    if (!lower) return PRODI_DATA
+    return PRODI_DATA.filter(p =>
+      p.name.toLowerCase().includes(lower) ||
+      p.faculty.toLowerCase().includes(lower) ||
+      p.keywords.some(k => k.toLowerCase().includes(lower))
+    )
+  }, [q])
+
+  const byFaculty = useMemo(() => {
+    const map: Record<string, typeof PRODI_DATA> = {}
+    for (const p of filtered) {
+      if (!map[p.faculty]) map[p.faculty] = []
+      map[p.faculty].push(p)
+    }
+    return map
+  }, [filtered])
+
+  const toggle = (id: string) => setOpen(prev => prev === id ? null : id)
+
+  return (
+    <section className="px-4 py-4">
+      <div className="mx-auto max-w-[1400px]">
+        <div className="card p-0 overflow-hidden">
+          <div className="flex items-center justify-between px-4 pt-3 pb-3 border-b border-border">
+            <h2 className="text-sm font-extrabold text-text">Program Studi</h2>
+            <span className="text-[9px] text-muted">{PRODI_DATA.length} prodi · 30 keyword/prodi</span>
+          </div>
+
+          <div className="px-4 py-3 border-b border-border">
+            <input
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              placeholder="Cari prodi atau keyword..."
+              className="input text-sm"
+            />
+          </div>
+
+          <div className="p-4 space-y-4">
+            {Object.entries(byFaculty).map(([faculty, list]) => {
+              const colorCls = FACULTY_COLORS[faculty] ?? "text-muted bg-surface2 border-border"
+              return (
+                <div key={faculty}>
+                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold border mb-2 ${colorCls}`}>
+                    {faculty}
+                    <span className="opacity-60">({list.length})</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                    {list.map(prodi => (
+                      <div key={prodi.id} className="border border-border rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => toggle(prodi.id)}
+                          className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-surface2/50 transition-colors"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-[12px] font-extrabold text-text leading-tight">{prodi.name}</div>
+                            <div className="text-[9px] text-muted mt-0.5">{prodi.keywords.length} keyword</div>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0 ml-2">
+                            <GptButton
+                              subject={`program studi ${prodi.name} prospek karir dan topik menarik`}
+                              label="GPT"
+                              className="text-[9px] px-1.5 py-0.5"
+                            />
+                            <span className="text-muted text-[10px]">{open === prodi.id ? "▲" : "▼"}</span>
+                          </div>
+                        </button>
+                        {open === prodi.id && (
+                          <div className="px-3 pb-3 pt-0 border-t border-border/50 bg-surface2/30">
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {prodi.keywords.map((kw, ki) => (
+                                <span
+                                  key={ki}
+                                  className="inline-flex items-center gap-0.5 bg-surface border border-border rounded px-1.5 py-0.5 text-[9px] text-text font-bold leading-tight"
+                                >
+                                  {kw}
+                                  <GptButton subject={`${kw} dalam konteks ${prodi.name}`} label="?" className="ml-0.5" />
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+            {filtered.length === 0 && (
+              <div className="py-8 text-center text-muted text-sm">
+                Tidak ada prodi yang sesuai dengan pencarian.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
