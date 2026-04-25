@@ -10,7 +10,8 @@ import os
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI
+import sentry_sdk
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from processing.cache import init_redis
@@ -18,6 +19,15 @@ from processing.nlp import init_nlp
 from processing.embeddings import init_embeddings
 
 logger = logging.getLogger(__name__)
+
+_SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
+if _SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=_SENTRY_DSN,
+        traces_sample_rate=0.1,
+        environment=os.environ.get("ENVIRONMENT", "production"),
+        send_default_pii=False,
+    )
 
 _db_client = None
 
@@ -159,6 +169,14 @@ async def force_refresh(module: str, request: Request):
     }
     try:
         await dispatch[module]()
+        try:
+            get_db_client().table("audit_log").insert({
+                "action":     f"refresh:{module}",
+                "resource":   module,
+                "ip_address": request.client.host if request.client else None,
+            }).execute()
+        except Exception:
+            pass
         return {"status": "ok", "module": module}
     except Exception as exc:
         logger.error("force_refresh(%s): %s", module, exc)

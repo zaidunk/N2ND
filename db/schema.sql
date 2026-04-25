@@ -225,3 +225,16 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_documents_updated_at
     BEFORE UPDATE ON documents
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- ─── Admin audit log ──────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS audit_log (
+    id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     text,
+    action      text NOT NULL,
+    resource    text,
+    ip_address  text,
+    created_at  timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_action  ON audit_log (action);

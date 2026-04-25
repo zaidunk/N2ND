@@ -1,0 +1,14 @@
+{
+  "apphosting": {
+    "backendId": "n2nd-web",
+    "rootDir": "dashboard",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "**/__pycache__/**",
+      "**/*.pyc"
+    ]
+  }
+}

@@ -53,3 +53,20 @@ dashboard/node_modules/
 
 # R2 / local archive
 raw_archive/
+
+# Dev/private files — not for repo
+.claude/
+cache/
+cache_utils.py
+config.py
+create_shortcut.ps1
+diagnostics.py
+gemini-cli.py
+lifemargin-internal-research-terminal/
+modules/
+portable-node/
+scheduler.py
+start_dashboard.bat
+surveilencemaxxing/
+templates/
+/xolvon-roadmap.md

@@ -83,6 +83,8 @@ async def fetch_rss(source_id: str, timeout: int = 10) -> list[RawArticle]:
         return []
 
     url   = conf["url"]
+    from ingestion.robots import require_approved
+    require_approved(url)
     tier  = conf["tier"]
     lang  = conf["lang"]
     name  = conf["name"]
