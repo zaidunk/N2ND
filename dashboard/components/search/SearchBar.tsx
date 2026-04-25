@@ -8,7 +8,7 @@ const TRENDING = ["viral minggu ini", "bi rate", "ekonomi indonesia", "psycholog
 
 interface SearchBarProps {
   defaultValue?: string
-  size?: "lg" | "md"
+  size?: "lg" | "md" | "sm"
 }
 
 export default function SearchBar({ defaultValue = "", size = "lg" }: SearchBarProps) {
@@ -22,6 +22,28 @@ export default function SearchBar({ defaultValue = "", size = "lg" }: SearchBarP
     startTransition(() => {
       router.push(`/?q=${encodeURIComponent(trimmed)}`)
     })
+  }
+
+  if (size === "sm") {
+    return (
+      <form onSubmit={e => { e.preventDefault(); submit(query) }} className="relative w-full">
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+        <input
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="Cari topik, berita, data..."
+          className="input w-full py-1.5 pl-8 pr-20 text-xs"
+        />
+        <button
+          type="submit"
+          disabled={isPending || !query.trim()}
+          className="btn-primary absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs disabled:opacity-50"
+        >
+          {isPending ? "..." : "Cari"}
+        </button>
+      </form>
+    )
   }
 
   const isLg = size === "lg"

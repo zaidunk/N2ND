@@ -3,11 +3,9 @@
 import { useMemo, useState } from "react"
 import type { Article, MacroSnapshotResponse, MarketResponse, TrendsResponse } from "@/lib/types"
 import SearchBar from "@/components/search/SearchBar"
-import AskAIButton from "@/components/actions/AskAIButton"
-import ArticleCard from "@/components/feed/ArticleCard"
 import Load30DaysButton from "@/components/actions/Load30DaysButton"
+import ArticleCard from "@/components/feed/ArticleCard"
 import { formatNumber, formatPct } from "@/lib/utils"
-import LazyYouTubeEmbed from "@/components/onepager/LazyYouTubeEmbed"
 
 interface Props {
   query: string
@@ -19,267 +17,251 @@ interface Props {
 }
 
 const PROGRAMS = [
-  "Kedokteran", "Teknik Informatika", "Sistem Informasi", "Ilmu Komputer", "Data Science", "Teknik Elektro",
-  "Teknik Mesin", "Teknik Industri", "Teknik Sipil", "Arsitektur", "Manajemen", "Akuntansi", "Ilmu Ekonomi",
-  "Psikologi", "Ilmu Komunikasi", "Hubungan Internasional", "Ilmu Hukum", "Ilmu Politik", "Sosiologi", "Antropologi",
-  "Pendidikan Matematika", "Pendidikan Bahasa Inggris", "Pendidikan Guru SD", "Biologi", "Kimia", "Fisika",
-  "Matematika", "Statistika", "Farmasi", "Kesehatan Masyarakat", "Keperawatan", "Gizi", "Kedokteran Gigi",
-  "Teknik Kimia", "Teknik Lingkungan", "Perencanaan Wilayah Kota", "Geografi", "Geologi", "Kelautan", "Perikanan",
-  "Peternakan", "Agribisnis", "Agroteknologi", "Desain Komunikasi Visual", "Seni Musik", "Sastra Inggris",
-  "Sastra Indonesia", "Bahasa Jepang", "Pariwisata", "Administrasi Bisnis",
-]
-
-const BASE_KEYWORDS = [
-  "ai tools", "prompt engineering", "critical thinking", "public speaking", "statistical literacy",
-  "research method", "digital ethics", "project management", "problem solving", "portfolio building",
-  "internship", "entrepreneurship", "financial literacy", "cybersecurity basics", "data visualization",
-  "networking", "career roadmap", "industry trends", "writing skill", "presentation skill",
-  "leadership", "global economy", "policy analysis", "innovation", "startup case study",
-  "indonesia market", "geopolitics", "time management", "academic productivity", "future jobs",
+  "Kedokteran","Teknik Informatika","Sistem Informasi","Ilmu Komputer","Data Science",
+  "Teknik Elektro","Teknik Mesin","Teknik Industri","Teknik Sipil","Arsitektur",
+  "Manajemen","Akuntansi","Ilmu Ekonomi","Psikologi","Ilmu Komunikasi",
+  "Hubungan Internasional","Ilmu Hukum","Ilmu Politik","Sosiologi","Statistika",
+  "Farmasi","Kesehatan Masyarakat","Keperawatan","Gizi","Kedokteran Gigi",
+  "Teknik Kimia","Teknik Lingkungan","Geografi","Geologi","Agribisnis",
+  "DKV","Sastra Inggris","Sastra Indonesia","Pariwisata","Administrasi Bisnis",
 ]
 
 const LIVE_STREAMS = [
-  {
-    name: "CNN Indonesia Live",
-    url: "https://www.youtube.com/@CNNindonesiaOfficial/live",
-    channelId: "UCZ4AMrDcNrfy3X6nsU8-rPg",
-  },
-  {
-    name: "Kompas TV Live",
-    url: "https://www.youtube.com/@KompasTV/live",
-    channelId: "UCER4rvDnRBPr_ncYW4UCg5A",
-  },
-  {
-    name: "CNBC Indonesia Live",
-    url: "https://www.youtube.com/@CNBCIndonesia/live",
-    channelId: "UCrh2Y7Hgg2Z8w3a_d4jR3dQ",
-  },
+  { name: "CNN Indonesia", url: "https://www.youtube.com/@CNNindonesiaOfficial/live" },
+  { name: "Kompas TV",     url: "https://www.youtube.com/@KompasTV/live" },
+  { name: "CNBC Indonesia",url: "https://www.youtube.com/@CNBCIndonesia/live" },
 ]
 
-function buildProgramKeywords(program: string) {
-  return BASE_KEYWORDS.map((keyword) => `${program.toLowerCase()} ${keyword}`)
+function openGPT(prompt: string) {
+  window.open(`https://chat.openai.com/?q=${encodeURIComponent(prompt)}`, "_blank", "noopener,noreferrer")
 }
 
-function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
+function KeywordChip({ keyword, category }: { keyword: string; category: string }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-3">
-      <div>
-        <h2 className="text-lg font-extrabold text-text">{title}</h2>
-        <p className="text-xs font-bold text-muted">{subtitle}</p>
+    <span className="inline-flex items-center gap-0.5 badge-blue text-[10px] leading-none py-0.5">
+      {keyword}
+      <button
+        onClick={() => openGPT(`Jelaskan tren "${keyword}" dalam konteks ${category.replaceAll("_"," ")} di Indonesia saat ini. Berikan insight singkat dan implikasinya dalam 3 poin.`)}
+        className="ml-0.5 text-[9px] font-extrabold text-muted hover:text-primary transition-colors"
+        title={`Tanya GPT tentang "${keyword}"`}
+      >?</button>
+    </span>
+  )
+}
+
+function StatRow({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="flex items-center justify-between py-1 border-b border-border last:border-0">
+      <span className="text-[10px] text-muted truncate pr-2">{label}</span>
+      <div className="text-right shrink-0">
+        <span className="text-xs font-extrabold text-text">{value}</span>
+        {sub && <span className="ml-1 text-[9px] text-muted">{sub}</span>}
       </div>
     </div>
   )
 }
 
 export default function OnePagerDashboard({ query, market, forex, news, trends, macro }: Props) {
-  const [newsLimit, setNewsLimit] = useState(9)
-  const [trendLimit, setTrendLimit] = useState(3)
-  const [programLimit, setProgramLimit] = useState(8)
+  const [showAllPrograms, setShowAllPrograms] = useState(false)
+  const [showAllNews,     setShowAllNews]     = useState(false)
 
-  const topPrograms = useMemo(
-    () => PROGRAMS.slice(0, programLimit).map((name) => ({ name, keywords: buildProgramKeywords(name) })),
-    [programLimit],
-  )
+  const indicators = market?.indicators ?? {} as Record<string, { value?: number; change_pct?: number }>
+  const btc    = market?.crypto?.bitcoin
+  const ihsg   = (indicators as Record<string, { value?: number; change_pct?: number }>).ihsg
+  const usdIdr = (indicators as Record<string, { value?: number }>).usd_idr?.value ?? forex?.USD_IDR?.rate
+  const biRate = (indicators as Record<string, number | undefined>).bi_rate
 
-  const trendEntries = Object.entries(trends?.categories ?? {})
-  const visibleTrends = trendEntries.slice(0, trendLimit)
-  const floatingTrendTokens = trendEntries.flatMap(([category, payload]) =>
-    payload.keywords.slice(0, 4).map((keyword) => `${category.replaceAll("_", " ")}: ${keyword}`),
-  )
-  const floatingNewsTokens = news.slice(0, 20).map((article) => article.title)
-
-  const marketIndicators = market?.indicators ?? {}
-  const btc = market?.crypto?.bitcoin
-  const ihsg = (marketIndicators as Record<string, { value?: number; change_pct?: number }>).ihsg
-  const usd = (marketIndicators as Record<string, { value?: number }>).usd_idr?.value ?? forex?.USD_IDR?.rate
+  const trendEntries = useMemo(() => Object.entries(trends?.categories ?? {}), [trends])
+  const visibleNews  = showAllNews ? news : news.slice(0, 8)
+  const visibleProgs = showAllPrograms ? PROGRAMS : PROGRAMS.slice(0, 18)
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8">
-      <section className="mb-8 rounded-2xl border border-border bg-surface p-6">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-wider text-primary">N2ND by Xolvon.ai</p>
-            <h1 className="text-3xl font-extrabold tracking-tight text-text sm:text-4xl">One Pager Intelligence Dashboard</h1>
-            <p className="mt-1 text-xs font-bold text-muted">Finance, News, Trends, Program Studi, dan Macro Visual dalam satu halaman.</p>
-          </div>
-          <Load30DaysButton />
-        </div>
-        <SearchBar defaultValue={query} size="lg" />
-      </section>
+    <div className="mx-auto w-full max-w-[1400px] px-3 py-3">
 
-      <section className="mb-10">
-        <SectionHeader title="Feature 1 · FinanceBoard" subtitle="Crypto, kurs rupiah, stocks, dan signal market live." />
-        <div className="mb-3 grid gap-3 md:grid-cols-3">
-          {LIVE_STREAMS.map((stream) => (
-            <div key={stream.name} className="space-y-2">
-              <LazyYouTubeEmbed title={stream.name} channelId={stream.channelId} sourceUrl={stream.url} />
-              <a
-                href={stream.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="badge-red w-fit whitespace-nowrap"
-              >
-                Open Source
-              </a>
-            </div>
-          ))}
+      {/* ── TOP BAR: search + load ─────────────────────────────────── */}
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex-1">
+          <SearchBar defaultValue={query} size="sm" />
         </div>
-        <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
-          {LIVE_STREAMS.map((stream) => (
-            <a
-              key={stream.name}
-              href={stream.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="badge-red whitespace-nowrap"
-            >
-              {stream.name}
+        <Load30DaysButton />
+      </div>
+
+      {/* ── MARKET TICKER STRIP ───────────────────────────────────── */}
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-border bg-surface px-3 py-1.5">
+        <span className="text-[9px] font-extrabold uppercase tracking-widest text-muted">Market</span>
+        <span className="text-xs font-extrabold text-text">
+          IHSG <span className="ml-1">{ihsg?.value ? formatNumber(ihsg.value, { decimals: 0 }) : "—"}</span>
+          {ihsg?.change_pct != null && (
+            <span className={`ml-1 text-[10px] ${ihsg.change_pct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+              {formatPct(ihsg.change_pct)}
+            </span>
+          )}
+        </span>
+        <span className="text-xs text-text">
+          USD/IDR <span className="ml-1 font-extrabold">{usdIdr ? `Rp ${formatNumber(usdIdr, { decimals: 0 })}` : "—"}</span>
+        </span>
+        <span className="text-xs text-text">
+          BTC <span className="ml-1 font-extrabold">{btc?.usd ? `$${formatNumber(btc.usd, { decimals: 0 })}` : "—"}</span>
+        </span>
+        <span className="text-xs text-text">
+          BI Rate <span className="ml-1 font-extrabold">{typeof biRate === "number" ? `${biRate}%` : "—"}</span>
+        </span>
+        {macro?.world_bank?.gdp_growth != null && (
+          <span className="text-xs text-text">
+            WB GDP <span className="ml-1 font-extrabold">{macro.world_bank.gdp_growth}%</span>
+          </span>
+        )}
+        <span className="ml-auto flex gap-3">
+          {LIVE_STREAMS.map(s => (
+            <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer"
+              className="text-[9px] font-extrabold text-red-400 hover:text-red-300 transition-colors">
+              ● {s.name}
             </a>
           ))}
-        </div>
-        {floatingNewsTokens.length > 0 ? (
-          <div className="auto-slide mb-3">
-            <div className="auto-slide-track">
-              {[...floatingNewsTokens, ...floatingNewsTokens].map((token, idx) => (
-                <span key={`finance-news-${idx}`} className="auto-slide-chip">
-                  {token}
-                </span>
-              ))}
-            </div>
-          </div>
-        ) : null}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="card p-4">
-            <p className="text-xs font-bold text-muted">IHSG</p>
-            <p className="text-2xl font-extrabold text-text">{ihsg?.value ? formatNumber(ihsg.value, { decimals: 0 }) : "—"}</p>
-            <p className={`text-xs font-bold ${(ihsg?.change_pct ?? 0) >= 0 ? "text-positive" : "text-negative"}`}>{formatPct(ihsg?.change_pct)}</p>
-          </div>
-          <div className="card p-4">
-            <p className="text-xs font-bold text-muted">USD / IDR</p>
-            <p className="text-2xl font-extrabold text-text">{usd ? `Rp ${formatNumber(usd, { decimals: 0 })}` : "—"}</p>
-            <p className="text-xs font-bold text-muted">FX Live</p>
-          </div>
-          <div className="card p-4">
-            <p className="text-xs font-bold text-muted">Bitcoin</p>
-            <p className="text-2xl font-extrabold text-text">{btc?.usd ? `$${formatNumber(btc.usd, { decimals: 0 })}` : "—"}</p>
-            <p className="text-xs font-bold text-muted">Crypto Live</p>
-          </div>
-          <div className="card p-4">
-            <p className="text-xs font-bold text-muted">BI Proxy</p>
-            <p className="text-2xl font-extrabold text-text">
-              {typeof (marketIndicators as { bi_rate?: number }).bi_rate === "number"
-                ? `${(marketIndicators as { bi_rate?: number }).bi_rate}%`
-                : "—"}
-            </p>
-            <p className="text-xs font-bold text-muted">Monetary Signal</p>
-          </div>
-        </div>
-      </section>
+        </span>
+      </div>
 
-      <section className="mb-10">
-        <SectionHeader title="Feature 2 · News (30 Hari)" subtitle="Semua sumber legal, klik berita untuk buka sumber, klik ? untuk tanya GPT." />
-        {news.length ? (
-          <>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {news.slice(0, newsLimit).map((article, idx) => (
-                <ArticleCard key={article.id ?? idx} article={article} />
+      {/* ── MAIN 3-COL GRID ───────────────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[2fr_2fr_1fr]">
+
+        {/* COL 1 — News ─────────────────────────────────────────── */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="section-title">News · {news.length} artikel</span>
+            <button
+              onClick={() => openGPT("Berikan ringkasan headline berita Indonesia hari ini beserta implikasinya untuk ekonomi, politik, dan bisnis.")}
+              className="text-[9px] text-muted hover:text-primary transition-colors"
+              title="Rangkum semua berita di GPT"
+            >? Rangkum semua</button>
+          </div>
+
+          {news.length === 0 ? (
+            <div className="card p-4 text-center text-xs text-muted">
+              Belum ada data — klik <span className="text-primary">Load 30 Hari</span>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-1">
+                {visibleNews.map((a, i) => (
+                  <div key={a.id ?? i} className="group flex items-start gap-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 hover:border-primary/30 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <a href={a.link} target="_blank" rel="noopener noreferrer"
+                        className="block text-xs font-extrabold text-text leading-tight hover:text-primary transition-colors line-clamp-2">
+                        {a.title}
+                      </a>
+                      <div className="mt-0.5 flex items-center gap-2 text-[9px] text-muted">
+                        <span className="uppercase">{a.source_id}</span>
+                        {a.published_at && (
+                          <span>{new Date(a.published_at).toLocaleDateString("id-ID", { day:"numeric", month:"short" })}</span>
+                        )}
+                        {a.topics?.slice(0,2).map(t => (
+                          <span key={t} className="rounded bg-blue-500/10 px-1 text-blue-400">{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => openGPT(`Berikan analisis singkat tentang berita ini dalam 3 poin: "${a.title}". Sumber: ${a.source_id}. Apa implikasinya untuk Indonesia?`)}
+                      className="shrink-0 text-[10px] font-extrabold text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-all"
+                      title="Tanya GPT"
+                    >?</button>
+                  </div>
+                ))}
+              </div>
+              {news.length > 8 && (
+                <button onClick={() => setShowAllNews(p => !p)}
+                  className="text-[10px] text-muted hover:text-primary transition-colors text-left">
+                  {showAllNews ? "↑ Sembunyikan" : `↓ Lihat ${news.length - 8} lagi`}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* COL 2 — Trends ───────────────────────────────────────── */}
+        <div className="flex flex-col gap-2">
+          <span className="section-title">Trends · per kategori</span>
+          {trendEntries.length === 0 ? (
+            <div className="card p-4 text-center text-xs text-muted">Belum ada data trends</div>
+          ) : (
+            trendEntries.map(([category, payload]) => (
+              <div key={category} className="rounded-lg border border-border bg-surface px-2.5 py-2">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-primary">
+                    {category.replaceAll("_", " ")}
+                  </span>
+                  <button
+                    onClick={() => openGPT(`Jelaskan tren besar dalam kategori ${category.replaceAll("_"," ")} di Indonesia minggu ini. Keyword utama: ${payload.keywords.slice(0,5).join(", ")}. Berikan insight dan implikasi.`)}
+                    className="text-[9px] text-muted hover:text-primary transition-colors"
+                    title="Tanya GPT tentang kategori ini"
+                  >? kategori</button>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {payload.keywords.map(kw => (
+                    <KeywordChip key={kw} keyword={kw} category={category} />
+                  ))}
+                  {payload.live_signals?.slice(0, 5).map(sig => (
+                    <span key={`sig-${sig}`}
+                      className="inline-flex items-center gap-0.5 badge-amber text-[10px] leading-none py-0.5">
+                      {sig}
+                      <button
+                        onClick={() => openGPT(`Jelaskan "${sig}" yang sedang trending saat ini. Apa konteksnya dan implikasinya?`)}
+                        className="ml-0.5 text-[9px] text-muted hover:text-amber-300 transition-colors"
+                        title="Tanya GPT"
+                      >?</button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* COL 3 — Macro + Programs ─────────────────────────────── */}
+        <div className="flex flex-col gap-3">
+
+          {/* Macro stats */}
+          <div className="rounded-lg border border-border bg-surface px-2.5 py-2">
+            <span className="section-title">Macro · Indonesia</span>
+            <div className="mt-1.5">
+              <StatRow label="WB GDP Growth" value={macro?.world_bank?.gdp_growth != null ? `${macro.world_bank.gdp_growth}%` : "—"} />
+              <StatRow label="WB Inflation" value={macro?.world_bank?.inflation != null ? `${macro.world_bank.inflation}%` : "—"} />
+              <StatRow label="IMF Real GDP" value={macro?.imf?.real_gdp_growth_latest != null ? `${macro.imf.real_gdp_growth_latest}%` : "—"} sub={macro?.imf?.year ?? ""} />
+              <StatRow label="BI Rate" value={typeof biRate === "number" ? `${biRate}%` : "—"} />
+              <StatRow label="USD/IDR" value={usdIdr ? `Rp ${formatNumber(usdIdr, { decimals: 0 })}` : "—"} />
+              <StatRow label="BPS + OJK + IDX" value="Live" sub="aggregated" />
+            </div>
+          </div>
+
+          {/* Program Studi */}
+          <div className="rounded-lg border border-border bg-surface px-2.5 py-2">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="section-title">Program Studi</span>
+              <button
+                onClick={() => openGPT("Jelaskan 5 skill paling penting yang dibutuhkan mahasiswa Indonesia di era AI saat ini, lintas jurusan.")}
+                className="text-[9px] text-muted hover:text-primary transition-colors"
+              >? skill era AI</button>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {visibleProgs.map(prog => (
+                <button
+                  key={prog}
+                  onClick={() => openGPT(`Saya mahasiswa ${prog} di Indonesia. Jelaskan 5 hal paling penting dan happening yang harus saya pelajari atau pantau saat ini untuk karir dan riset.`)}
+                  className="inline-flex items-center rounded bg-white/5 px-1.5 py-0.5 text-[9px] font-extrabold text-muted hover:bg-primary/10 hover:text-primary transition-colors border border-border"
+                >
+                  {prog}
+                </button>
               ))}
             </div>
-            {newsLimit < news.length ? (
-              <button className="btn-ghost mt-4 text-xs" onClick={() => setNewsLimit((prev) => prev + 9)}>
-                Full More
+            {PROGRAMS.length > 18 && (
+              <button onClick={() => setShowAllPrograms(p => !p)}
+                className="mt-1.5 text-[9px] text-muted hover:text-primary transition-colors">
+                {showAllPrograms ? "↑ Sembunyikan" : `↓ +${PROGRAMS.length - 18} lagi`}
               </button>
-            ) : null}
-          </>
-        ) : (
-          <div className="card p-6 text-sm font-bold text-muted">Belum ada data news, klik `Load 30 Hari` dulu.</div>
-        )}
-      </section>
+            )}
+          </div>
 
-      <section className="mb-10">
-        <SectionHeader title="Feature 3 · Trends Legal API" subtitle="Kategori trends dengan floating slide keywords + satu klik ke GPT." />
-        {floatingTrendTokens.length > 0 ? (
-          <div className="auto-slide mb-3">
-            <div className="auto-slide-track">
-              {[...floatingTrendTokens, ...floatingTrendTokens].map((token, idx) => (
-                <span key={`trend-token-${idx}`} className="auto-slide-chip">
-                  {token}
-                </span>
-              ))}
-            </div>
-          </div>
-        ) : null}
-        <div className="space-y-3">
-          {visibleTrends.map(([category, payload]) => (
-            <div key={category} className="card p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-extrabold capitalize text-text">{category.replaceAll("_", " ")}</p>
-                <AskAIButton subject={`tren ${category} minggu ini`} compact />
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {payload.keywords.slice(0, 12).map((keyword) => (
-                  <span key={keyword} className="badge-blue whitespace-nowrap">{keyword}</span>
-                ))}
-                {payload.live_signals.slice(0, 8).map((signal) => (
-                  <span key={`${category}-${signal}`} className="badge-amber whitespace-nowrap">{signal}</span>
-                ))}
-              </div>
-            </div>
-          ))}
         </div>
-        {trendLimit < trendEntries.length ? (
-          <button className="btn-ghost mt-4 text-xs" onClick={() => setTrendLimit((prev) => prev + 2)}>
-            Full More
-          </button>
-        ) : null}
-      </section>
-
-      <section className="mb-10">
-        <SectionHeader title="Feature 4 · Program Studi (50+)" subtitle="Setiap program studi punya 30 keyword penting/happening + tanya GPT." />
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {topPrograms.map((program) => (
-            <div key={program.name} className="card p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-extrabold text-text">{program.name}</p>
-                <AskAIButton subject={`hal penting untuk mahasiswa ${program.name}`} compact />
-              </div>
-              <div className="flex max-h-24 flex-wrap gap-1 overflow-hidden">
-                {program.keywords.map((keyword) => (
-                  <span key={keyword} className="badge-gray text-[10px]">{keyword}</span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-        {programLimit < PROGRAMS.length ? (
-          <button className="btn-ghost mt-4 text-xs" onClick={() => setProgramLimit((prev) => prev + 10)}>
-            Full More
-          </button>
-        ) : null}
-      </section>
-
-      <section>
-        <SectionHeader title="Feature 5 · Macro Visual (Ringan)" subtitle="BPS, OJK, BI, IMF, World Bank untuk konteks political & business." />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="card p-4">
-            <p className="text-xs font-bold text-muted">World Bank GDP Growth</p>
-            <p className="text-2xl font-extrabold text-text">{macro?.world_bank?.gdp_growth != null ? `${macro.world_bank.gdp_growth}%` : "—"}</p>
-          </div>
-          <div className="card p-4">
-            <p className="text-xs font-bold text-muted">World Bank Inflation</p>
-            <p className="text-2xl font-extrabold text-text">{macro?.world_bank?.inflation != null ? `${macro.world_bank.inflation}%` : "—"}</p>
-          </div>
-          <div className="card p-4">
-            <p className="text-xs font-bold text-muted">IMF Real GDP Growth</p>
-            <p className="text-2xl font-extrabold text-text">{macro?.imf?.real_gdp_growth_latest != null ? `${macro.imf.real_gdp_growth_latest}%` : "—"}</p>
-          </div>
-          <div className="card p-4">
-            <p className="text-xs font-bold text-muted">IDX/OJK/BPS/BI</p>
-            <p className="text-sm font-extrabold text-text">Live Aggregated</p>
-            <p className="text-xs font-bold text-muted">source-ready for business and policy context</p>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   )
 }
