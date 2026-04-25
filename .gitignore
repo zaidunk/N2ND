@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets — NEVER commit
+.env
+.env.local
+.env.production
+*.key
+*.pem
+
+# Logs & temp
+*.log
+*.tmp
+*.bak
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node (dashboard)
+node_modules/
+.next/
+dashboard/.next/
+dashboard/node_modules/
+
+# spaCy models (downloaded separately)
+*.tar.gz
+
+# R2 / local archive
+raw_archive/

@@ -1,0 +1,23 @@
+Category,Indicator,Unit,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025
+Social,Population,million,258.5,261.4,264.2,266.9,270.2,272.7,275.7,278.7,281.6,284.4
+Social,Population Growth Rate,%,1.36,1.34,1.33,1.31,1.25,1.22,1.17,1.13,1.14,1.09
+Social,Total Fertility Rate,child per woman,2.16,2.14,2.13,2.11,2.18,2.17,2.15,2.14,2.12,2.11
+Social,Infant Mortality Rate,per 1000 live births,19.6,19.1,18.6,18.1,16.9,16.2,15.5,14.8,14.1,13.4
+Social,Life Expectancy,years,72.7,72.9,73.0,73.2,73.4,73.5,73.7,73.9,74.2,74.5
+Social,Literacy Rate 15+,%,95.4,95.5,95.7,95.9,96.0,96.0,96.4,96.5,97.1,97.1
+Social,Labour Force Participation Rate (LFPR),%,66.3,66.7,67.3,67.5,67.8,67.8,68.6,69.5,70.6,70.6
+Social,Unemployment Rate (TPT),%,5.6,5.5,5.3,5.2,7.1,6.5,5.9,5.3,4.9,4.9
+Social,Poor People,million,28.0,27.8,25.9,25.1,26.4,27.5,26.2,25.9,25.2,23.9
+Social,Poverty Rate,%,10.9,10.6,9.8,9.4,9.8,10.1,9.5,9.4,9.0,8.5
+Social,Human Development Index (HDI),,70.2,70.8,71.4,71.9,72.8,73.2,73.8,74.4,75.0,75.9
+Economy,GDP at Current Price,trillion IDR,12401.7,13589.8,14838.8,15832.7,15443.4,16976.8,19588.5,20892.3,22139.0,23821.1
+Economy,GDP Growth Rate,%,5.0,5.1,5.2,5.0,-2.1,3.7,5.3,5.1,5.0,5.1
+Economy,GDP per Capita,million IDR,47.9,51.9,56.0,59.3,57.2,62.3,71.0,75.0,78.6,83.7
+Economy,Inflation (y-o-y),%,3.0,3.6,3.1,2.7,1.7,1.9,5.5,2.6,1.6,2.9
+Economy,Export,billion USD,145.2,168.8,180.0,167.7,163.2,231.7,292.2,259.5,266.5,282.9
+Economy,Import,billion USD,135.7,157.0,188.7,171.3,141.6,196.2,237.9,223.1,235.2,241.9
+Economy,Foreign Tourists,million,11.5,14.0,15.8,16.1,4.1,1.6,5.7,11.7,13.9,15.4
+Economy,USD Exchange Rate,IDR,13436,13548,14481,13901,14105,14269,15731,15416,16162,16782
+Economy,Composite Stock Price Index (CSPI),,5296.7,6355.7,6194.5,6299.5,5979.1,6581.5,6850.6,7272.8,7079.9,8647.0
+Economy,Foreign Investment (FDI),billion USD,29.0,32.2,29.3,28.2,28.7,31.1,45.6,50.3,60.0,56.3
+Economy,Domestic Investment (PMDN),trillion IDR,216.2,262.4,328.6,386.5,413.5,447.1,552.8,674.9,814.0,1030.3

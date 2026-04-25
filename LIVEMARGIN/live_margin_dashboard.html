@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Margin — BPS Indonesia 2026 Intelligence Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --brand-red: #E8203C;
+    --brand-dark: #0F0F0F;
+    --surface: #161616;
+    --surface2: #1E1E1E;
+    --surface3: #272727;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #F0EFEB;
+    --text2: #9B9A95;
+    --text3: #5A5957;
+    --gold: #F0A228;
+    --teal: #1DB97A;
+    --blue: #3B8BDD;
+    --font: 'Space Grotesk', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--brand-dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: var(--brand-red);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+  .logo-text { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+  .logo-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
+  .header-badge {
+    background: rgba(232,32,60,0.15);
+    border: 1px solid rgba(232,32,60,0.3);
+    color: var(--brand-red);
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* NAV */
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: var(--font);
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--brand-red); border-bottom-color: var(--brand-red); }
+
+  /* MAIN */
+  .main { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+
+  /* SECTION */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  @media (max-width: 900px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 1rem;
+    font-family: var(--mono);
+  }
+
+  /* STAT CARDS */
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent, var(--brand-red));
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .stat-trend {
+    font-size: 12px;
+    font-family: var(--mono);
+    margin-top: 4px;
+  }
+  .up { color: var(--teal); }
+  .down { color: var(--brand-red); }
+  .neutral { color: var(--text3); }
+
+  /* CHART WRAPPER */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .section-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 4px;
+    max-width: 540px;
+  }
+  .source-badge {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--text3);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  /* INSIGHT CARDS */
+  .insight-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+  .insight-card:hover { border-color: var(--border2); }
+  .insight-number {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .insight-hook {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .insight-angle {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .insight-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.03em;
+  }
+  .tag-red { background: rgba(232,32,60,0.12); color: #FF6B7A; border: 1px solid rgba(232,32,60,0.2); }
+  .tag-gold { background: rgba(240,162,40,0.12); color: #F0A228; border: 1px solid rgba(240,162,40,0.2); }
+  .tag-teal { background: rgba(29,185,122,0.12); color: #1DB97A; border: 1px solid rgba(29,185,122,0.2); }
+  .tag-blue { background: rgba(59,139,221,0.12); color: #3B8BDD; border: 1px solid rgba(59,139,221,0.2); }
+  .viral-score {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--brand-red);
+    float: right;
+  }
+
+  /* PROVINCE TABLE */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--text3);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .data-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .data-table tr:hover td { background: var(--surface2); color: var(--text); }
+  .data-table .prov { color: var(--text); font-weight: 500; }
+  .data-table .num { font-family: var(--mono); text-align: right; }
+  .data-table .total td { background: rgba(232,32,60,0.07); color: var(--text); font-weight: 600; border-top: 1px solid rgba(232,32,60,0.2); }
+
+  /* PROVINCE BARS */
+  .pbar-wrap { display: flex; align-items: center; gap: 8px; }
+  .pbar { height: 6px; border-radius: 3px; background: var(--brand-red); opacity: 0.8; min-width: 2px; }
+
+  /* SEARCH / FILTER */
+  .filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    flex: 1;
+    min-width: 200px;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--brand-red); }
+  .search-input::placeholder { color: var(--text3); }
+  .filter-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--brand-red);
+    color: var(--brand-red);
+    background: rgba(232,32,60,0.08);
+  }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* CONTENT PIPELINE */
+  .pipeline-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 10px;
+  }
+  .pipeline-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .pipeline-num {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--brand-red);
+    width: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .pipeline-content { flex: 1; }
+  .pipeline-hook {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 5px;
+    line-height: 1.35;
+  }
+  .pipeline-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .pipeline-meta span::before { content: '→ '; color: var(--brand-red); }
+  .priority-badge {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 2px 8px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .p-hot { background: rgba(232,32,60,0.15); color: #FF6B7A; border: 1px solid rgba(232,32,60,0.25); }
+  .p-warm { background: rgba(240,162,40,0.15); color: #F0A228; border: 1px solid rgba(240,162,40,0.25); }
+  .p-cool { background: rgba(59,139,221,0.15); color: #3B8BDD; border: 1px solid rgba(59,139,221,0.25); }
+
+  /* SCROLLABLE TABLE */
+  .table-scroll { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+  .scroll-hint { font-size: 11px; color: var(--text3); margin-bottom: 6px; font-family: var(--mono); }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">LM</div>
+    <div>
+      <div class="logo-text">Live Margin</div>
+      <div class="logo-sub">Solveon Intelligence System</div>
+    </div>
+  </div>
+  <div class="header-badge">BPS STATISTIK INDONESIA 2026 · v1.0</div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-tab active" onclick="showSection('overview')">Overview</button>
+  <button class="nav-tab" onclick="showSection('economy')">Ekonomi</button>
+  <button class="nav-tab" onclick="showSection('employment')">Ketenagakerjaan</button>
+  <button class="nav-tab" onclick="showSection('social')">Sosial</button>
+  <button class="nav-tab" onclick="showSection('digital')">Digital</button>
+  <button class="nav-tab" onclick="showSection('content')">Content Pipeline</button>
+  <button class="nav-tab" onclick="showSection('datasets')">Datasets</button>
+</nav>
+
+<main class="main">
+
+<!-- ============================================================ -->
+<!-- SECTION: OVERVIEW -->
+<!-- ============================================================ -->
+<section id="overview" class="section active">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Dashboard Nasional 2026</div>
+      <div class="section-desc">Indikator kunci Indonesia 2016–2025 dari Badan Pusat Statistik</div>
+    </div>
+    <div class="source-badge">BPS · Statistik Indonesia 2026 · Tabel 0.1</div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:1.5rem">
+    <div class="stat-card" style="--accent:#E8203C">
+      <span class="stat-label">Populasi 2025</span>
+      <div class="stat-value">284,4 <span style="font-size:16px;font-weight:400">Jt</span></div>
+      <div class="stat-sub">+1,09% YoY</div>
+      <div class="stat-trend up">↑ Bonus demografi aktif</div>
+    </div>
+    <div class="stat-card" style="--accent:#1DB97A">
+      <span class="stat-label">GDP 2025</span>
+      <div class="stat-value">23,8 <span style="font-size:16px;font-weight:400">T IDR</span></div>
+      <div class="stat-sub">Tumbuh 5,1% YoY</div>
+      <div class="stat-trend up">↑ Konsisten ≥5% pasca-pandemi</div>
+    </div>
+    <div class="stat-card" style="--accent:#F0A228">
+      <span class="stat-label">Kemiskinan Sep-2025</span>
+      <div class="stat-value">8,25 <span style="font-size:16px;font-weight:400">%</span></div>
+      <div class="stat-sub">23,36 juta jiwa</div>
+      <div class="stat-trend down">↓ Terendah sepanjang sejarah</div>
+    </div>
+    <div class="stat-card" style="--accent:#3B8BDD">
+      <span class="stat-label">HDI 2025</span>
+      <div class="stat-value">75,90</div>
+      <div class="stat-sub">Naik dari 73,16 (2021)</div>
+      <div class="stat-trend up">↑ Konsisten naik 5 tahun</div>
+    </div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:2rem">
+    <div class="stat-card" style="--accent:#E8203C">
+      <span class="stat-label">Pengangguran Aug-2025</span>
+      <div class="stat-value">4,85 <span style="font-size:16px;font-weight:400">%</span></div>
+      <div class="stat-sub">Turun dari 7,1% (2020)</div>
+      <div class="stat-trend up">↑ Pemulihan post-pandemi</div>
+    </div>
+    <div class="stat-card" style="--accent:#1DB97A">
+      <span class="stat-label">UMP Rata-Rata 2025</span>
+      <div class="stat-value">3,3 <span style="font-size:16px;font-weight:400">Jt</span></div>
+      <div class="stat-sub">Naik 5,82% dari 2024</div>
+      <div class="stat-trend neutral">→ Jakarta Rp 5,4 juta tertinggi</div>
+    </div>
+    <div class="stat-card" style="--accent:#F0A228">
+      <span class="stat-label">Inflasi 2025</span>
+      <div class="stat-value">2,92 <span style="font-size:16px;font-weight:400">%</span></div>
+      <div class="stat-sub">Naik dari 1,57% (2024)</div>
+      <div class="stat-trend down">↓ Makanan +4,58% terbesar</div>
+    </div>
+    <div class="stat-card" style="--accent:#3B8BDD">
+      <span class="stat-label">Internet HH 2025</span>
+      <div class="stat-value">91,66 <span style="font-size:16px;font-weight:400">%</span></div>
+      <div class="stat-sub">Naik dari 86,54% (2022)</div>
+      <div class="stat-trend up">↑ Papua Pegunungan 26,6%</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Tren Kemiskinan & Pengangguran 2016–2025</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#E8203C"></div>Kemiskinan (%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F0A228"></div>Pengangguran (%)</div>
+      </div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-pov-unemp"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Pertumbuhan GDP & Inflasi 2016–2025</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1DB97A"></div>GDP Growth (%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3B8BDD"></div>Inflasi (%)</div>
+      </div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-gdp-inf"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Indeks Pembangunan Manusia (HDI) 2021–2025 — Top 5 vs Bottom 5</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1DB97A"></div>Top 5</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#E8203C"></div>Bottom 5</div>
+      </div>
+      <div class="chart-wrap" style="height:280px"><canvas id="c-hdi"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Populasi Indonesia per Kelompok Umur 2026</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="c-age"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION: ECONOMY -->
+<!-- ============================================================ -->
+<section id="economy" class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Ekonomi & Upah</div>
+      <div class="section-desc">UMP, garis kemiskinan, harga beras, inflasi sektoral, dan investasi asing</div>
+    </div>
+    <div class="source-badge">BPS · Ch. 2.4, 3.2, 12, 11.2</div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-title">UMP 10 Provinsi Tertinggi vs Terendah 2025 (Juta IDR/bulan)</div>
+      <div class="chart-wrap" style="height:340px"><canvas id="c-ump"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Inflasi Berdasarkan Kelompok Pengeluaran 2025 (%)</div>
+      <div class="chart-wrap" style="height:340px"><canvas id="c-inflation-sector"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-title">Harga Beras Eceran Nasional 2022–2025 (IDR/kg) — Kota Terpilih</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#E8203C"></div>Jakarta</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F0A228"></div>Banjarmasin</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1DB97A"></div>Makassar</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3B8BDD"></div>Jayapura</div>
+      </div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-rice"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">FDI Indonesia — Top 8 Negara Investor 2025 (Juta USD)</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="c-fdi"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Garis Kemiskinan & Persentase Penduduk Miskin 2017–2025</div>
+    <div class="grid-2">
+      <div>
+        <div class="legend" style="margin-bottom:10px">
+          <div class="legend-item"><div class="legend-dot" style="background:#E8203C"></div>Kemiskinan Nasional (%)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F0A228"></div>Perkotaan (%)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3B8BDD"></div>Perdesaan (%)</div>
+        </div>
+        <div class="chart-wrap" style="height:240px"><canvas id="c-poverty-trend"></canvas></div>
+      </div>
+      <div>
+        <div class="legend" style="margin-bottom:10px">
+          <div class="legend-item"><div class="legend-dot" style="background:#1DB97A"></div>Garis Miskin Kota (IDR/kapita/bln)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3B8BDD"></div>Garis Miskin Desa (IDR/kapita/bln)</div>
+        </div>
+        <div class="chart-wrap" style="height:240px"><canvas id="c-poverty-line"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION: EMPLOYMENT -->
+<!-- ============================================================ -->
+<section id="employment" class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Ketenagakerjaan</div>
+      <div class="section-desc">Pengangguran, upah rata-rata, pekerja informal, dan UMP per provinsi</div>
+    </div>
+    <div class="source-badge">BPS · Sakernas Agustus 2025</div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:1.5rem">
+    <div class="stat-card" style="--accent:#E8203C">
+      <span class="stat-label">TPT Nasional Aug-2025</span>
+      <div class="stat-value">4,85 <span style="font-size:16px">%</span></div>
+      <div class="stat-sub">TPAK: 70,59%</div>
+      <div class="stat-trend up">↑ Pulih dari 7,1% (2020)</div>
+    </div>
+    <div class="stat-card" style="--accent:#1DB97A">
+      <span class="stat-label">Upah Formal Nasional</span>
+      <div class="stat-value">3,5 <span style="font-size:16px">Jt</span></div>
+      <div class="stat-sub">Rata-rata sektor C (Manufaktur)</div>
+      <div class="stat-trend neutral">→ DKI Mining Rp 12,6 Jt tertinggi</div>
+    </div>
+    <div class="stat-card" style="--accent:#F0A228">
+      <span class="stat-label">Pendapatan Informal</span>
+      <div class="stat-value">1,94 <span style="font-size:16px">Jt</span></div>
+      <div class="stat-sub">Usia 15–24: Rp 1,65 Jt/bln</div>
+      <div class="stat-trend down">↓ Di bawah UMP rata-rata</div>
+    </div>
+    <div class="stat-card" style="--accent:#3B8BDD">
+      <span class="stat-label">Banten — TPT Tertinggi</span>
+      <div class="stat-value">6,69 <span style="font-size:16px">%</span></div>
+      <div class="stat-sub">Papua Pegunungan: 1,68%</div>
+      <div class="stat-trend down">↓ Paradoks: kota = lebih nganggur</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-title">Tingkat Pengangguran Terbuka (TPT) per Provinsi — Aug 2025 (%)</div>
+      <div class="chart-wrap" style="height:580px"><canvas id="c-tpt"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Upah Rata-Rata Bulanan berdasarkan Kelompok Umur 2025 (IDR)</div>
+      <div class="legend" style="margin-bottom:8px">
+        <div class="legend-item"><div class="legend-dot" style="background:#E8203C"></div>Mining (B)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F0A228"></div>Electricity (D)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1DB97A"></div>Manufacturing (C)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3B8BDD"></div>Agriculture (A)</div>
+      </div>
+      <div class="chart-wrap" style="height:280px"><canvas id="c-wage-age"></canvas></div>
+      <div style="margin-top:1.5rem">
+        <div class="card-title">Pendapatan Pekerja Informal per Kelompok Umur 2025 (IDR)</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c-informal-age"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION: SOCIAL -->
+<!-- ============================================================ -->
+<section id="social" class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Sosial & Kesejahteraan</div>
+      <div class="section-desc">Merokok, nikah-cerai, kebahagiaan, pendidikan, dan kesehatan</div>
+    </div>
+    <div class="source-badge">BPS · Susenas 2025 · SPTK 2021</div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:1.5rem">
+    <div class="stat-card" style="--accent:#E8203C">
+      <span class="stat-label">Perokok 25–34 tahun</span>
+      <div class="stat-value">32,58 <span style="font-size:16px">%</span></div>
+      <div class="stat-sub">1 dari 3 aktif merokok</div>
+      <div class="stat-trend down">↓ Usia 15–24: 18,73%</div>
+    </div>
+    <div class="stat-card" style="--accent:#F0A228">
+      <span class="stat-label">Perceraian 2023</span>
+      <div class="stat-value">463 <span style="font-size:16px">rb</span></div>
+      <div class="stat-sub">Penelantaran: 31.029 kasus</div>
+      <div class="stat-trend down">↓ ~1 cerai tiap 68 detik</div>
+    </div>
+    <div class="stat-card" style="--accent:#1DB97A">
+      <span class="stat-label">Kebahagiaan Maluku Utara</span>
+      <div class="stat-value">76,34</div>
+      <div class="stat-sub">DKI Jakarta: 70,68</div>
+      <div class="stat-trend up">↑ Pulau lebih bahagia dari Jawa</div>
+    </div>
+    <div class="stat-card" style="--accent:#3B8BDD">
+      <span class="stat-label">Lulusan PT (15+ th)</span>
+      <div class="stat-value">11,0 <span style="font-size:16px">%</span></div>
+      <div class="stat-sub">Desa: hanya 6,03%</div>
+      <div class="stat-trend neutral">→ APM SMA: 67,44%</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-title">Prevalensi Merokok per Kelompok Umur — Indonesia 2025 (%)</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="c-smoke"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Faktor Penyebab Perceraian Indonesia 2025</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="c-divorce"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-title">Indeks Kebahagiaan per Provinsi 2021 — 20 Provinsi</div>
+      <div class="chart-wrap" style="height:380px"><canvas id="c-happy"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tren Pernikahan & Perceraian 2023–2025</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="c-marriage"></canvas></div>
+      <div style="height:1px;background:var(--border);margin:1.25rem 0"></div>
+      <div class="card-title">Distribusi Pendidikan Tertinggi 2025 — Urban vs Rural (%)</div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-edu"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION: DIGITAL -->
+<!-- ============================================================ -->
+<section id="digital" class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Digital & Transportasi</div>
+      <div class="section-desc">Akses internet, kepemilikan HP, kendaraan bermotor, dan UMKM kredit</div>
+    </div>
+    <div class="source-badge">BPS · Susenas 2025 · OJK 2025</div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:1.5rem">
+    <div class="stat-card" style="--accent:#3B8BDD">
+      <span class="stat-label">Internet HH Nasional 2025</span>
+      <div class="stat-value">91,66 <span style="font-size:16px">%</span></div>
+      <div class="stat-sub">Naik dari 86,54% (2022)</div>
+      <div class="stat-trend up">↑ Kep. Riau tertinggi: 98,41%</div>
+    </div>
+    <div class="stat-card" style="--accent:#E8203C">
+      <span class="stat-label">Papua Pegunungan Internet</span>
+      <div class="stat-value">26,61 <span style="font-size:16px">%</span></div>
+      <div class="stat-sub">vs Jakarta 98,19%</div>
+      <div class="stat-trend down">↓ Gap digital terbesar</div>
+    </div>
+    <div class="stat-card" style="--accent:#1DB97A">
+      <span class="stat-label">Kepemilikan HP 2025</span>
+      <div class="stat-value">70,75 <span style="font-size:16px">%</span></div>
+      <div class="stat-sub">Laki-laki: 74,61% | Wanita: 66,88%</div>
+      <div class="stat-trend up">↑ Kaltim tertinggi: 84,04%</div>
+    </div>
+    <div class="stat-card" style="--accent:#F0A228">
+      <span class="stat-label">Kredit UMKM 2025</span>
+      <div class="stat-value">1.502 <span style="font-size:16px">T</span></div>
+      <div class="stat-sub">Perdagangan: Rp 670T terbesar</div>
+      <div class="stat-trend up">↑ Usaha mikro: Rp 638 M</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-title">Akses Internet Rumah Tangga per Provinsi 2025 (%)</div>
+      <div class="chart-wrap" style="height:580px"><canvas id="c-internet"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tren Internet RT Nasional 2022–2025 (%)</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="c-internet-trend"></canvas></div>
+      <div style="height:1px;background:var(--border);margin:1.25rem 0"></div>
+      <div class="card-title">Kredit UMKM per Sektor 2025 — Top 8 (Triliun IDR)</div>
+      <div class="chart-wrap" style="height:270px"><canvas id="c-umkm"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION: CONTENT PIPELINE -->
+<!-- ============================================================ -->
+<section id="content" class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Content Pipeline</div>
+      <div class="section-desc">30 ide konten data-driven siap produksi dari Statistik Indonesia 2026</div>
+    </div>
+    <div class="source-badge">Live Margin · Content Engine v1</div>
+  </div>
+
+  <div class="filter-row">
+    <input type="text" class="search-input" placeholder="Cari konten..." id="content-search" oninput="filterContent()">
+    <button class="filter-btn active" onclick="filterByTag('all', this)">Semua</button>
+    <button class="filter-btn" onclick="filterByTag('ekonomi', this)">Ekonomi</button>
+    <button class="filter-btn" onclick="filterByTag('sosial', this)">Sosial</button>
+    <button class="filter-btn" onclick="filterByTag('digital', this)">Digital</button>
+    <button class="filter-btn" onclick="filterByTag('viral', this)">🔥 High Viral</button>
+  </div>
+
+  <div id="content-list"></div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION: DATASETS -->
+<!-- ============================================================ -->
+<section id="datasets" class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Raw Datasets</div>
+      <div class="section-desc">19 file CSV bersih siap untuk automation pipeline & konten</div>
+    </div>
+    <div class="source-badge">Live Margin · CSV Engine v1</div>
+  </div>
+
+  <div id="datasets-list"></div>
+</section>
+
+</main>
+
+<footer class="footer">
+  Live Margin Intelligence Dashboard · Sumber: BPS Statistik Indonesia 2026 (Vol. 54) · Diolah oleh Solveon Data Pipeline · Maret 2026
+</footer>
+
+<script>
+// ================================================================
+// NAVIGATION
+// ================================================================
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ================================================================
+// CHART DEFAULTS
+// ================================================================
+const C = {
+  red: '#E8203C', gold: '#F0A228', teal: '#1DB97A', blue: '#3B8BDD',
+  purple: '#9B5DE5', pink: '#F15BB5', text: '#9B9A95', grid: 'rgba(255,255,255,0.05)'
+};
+const defOpts = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: {
+    backgroundColor: '#1E1E1E', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+    titleColor: '#F0EFEB', bodyColor: '#9B9A95', padding: 10, cornerRadius: 6
+  }},
+  scales: {
+    x: { grid: { color: C.grid }, ticks: { color: C.text, font: { size: 11, family: 'JetBrains Mono' } }, border: { color: 'rgba(255,255,255,0.08)' } },
+    y: { grid: { color: C.grid }, ticks: { color: C.text, font: { size: 11, family: 'JetBrains Mono' } }, border: { color: 'rgba(255,255,255,0.08)' } }
+  }
+};
+function mk(id, type, data, opts={}) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  return new Chart(ctx, { type, data, options: Chart.helpers.merge(JSON.parse(JSON.stringify(defOpts)), opts) });
+}
+
+// ================================================================
+// OVERVIEW CHARTS
+// ================================================================
+const years = ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
+
+mk('c-pov-unemp','line',{
+  labels: years,
+  datasets: [
+    { label:'Kemiskinan (%)', data:[10.9,10.6,9.8,9.4,9.8,10.1,9.5,9.4,9.0,8.25], borderColor:C.red, backgroundColor:'rgba(232,32,60,0.1)', tension:0.4, pointRadius:3, pointBackgroundColor:C.red, fill:true },
+    { label:'Pengangguran (%)', data:[5.6,5.5,5.3,5.2,7.1,6.5,5.9,5.3,4.9,4.85], borderColor:C.gold, backgroundColor:'rgba(240,162,40,0.08)', tension:0.4, pointRadius:3, pointBackgroundColor:C.gold, fill:true }
+  ]
+});
+
+mk('c-gdp-inf','line',{
+  labels: years,
+  datasets: [
+    { label:'GDP Growth (%)', data:[5.0,5.1,5.2,5.0,-2.1,3.7,5.3,5.1,5.0,5.1], borderColor:C.teal, backgroundColor:'rgba(29,185,122,0.1)', tension:0.4, pointRadius:3, pointBackgroundColor:C.teal, fill:true },
+    { label:'Inflasi (%)', data:[3.0,3.6,3.1,2.7,1.7,1.9,5.5,2.6,1.6,2.9], borderColor:C.blue, backgroundColor:'rgba(59,139,221,0.08)', tension:0.4, pointRadius:3, pointBackgroundColor:C.blue, fill:true }
+  ]
+});
+
+mk('c-hdi','line',{
+  labels:['2021','2022','2023','2024','2025'],
+  datasets:[
+    { label:'DKI Jakarta', data:[82.25,82.77,83.55,84.15,85.05], borderColor:C.teal, tension:0.3, pointRadius:4, pointBackgroundColor:C.teal },
+    { label:'DI Yogyakarta', data:[80.22,80.65,81.09,81.62,82.48], borderColor:C.blue, tension:0.3, pointRadius:4, pointBackgroundColor:C.blue },
+    { label:'Kep. Riau', data:[77.87,78.48,79.08,79.89,80.53], borderColor:C.gold, tension:0.3, pointRadius:4, pointBackgroundColor:C.gold },
+    { label:'Papua Tengah', data:[null,58.76,59.44,60.25,60.64], borderColor:C.red, tension:0.3, pointRadius:4, pointBackgroundColor:C.red, borderDash:[4,3] },
+    { label:'Papua Pegunungan', data:[null,52.69,53.45,54.43,54.91], borderColor:'#E8203C', tension:0.3, pointRadius:4, pointBackgroundColor:'#E8203C', borderDash:[2,2], borderWidth:1 }
+  ]
+},{
+  plugins:{ legend:{ display:true, labels:{ color:C.text, boxWidth:10, font:{ size:11 } } } }
+});
+
+const ageLab = ['0-4','5-9','10-14','15-19','20-24','25-29','30-34','35-39','40-44','45-49','50-54','55-59','60-64','65+'];
+const agePop = [22631,22140,22000,22070,22099,22457,22260,21824,20852,19845,17965,15559,12780,22717];
+mk('c-age','bar',{
+  labels: ageLab,
+  datasets:[{ label:'Populasi (ribu)', data:agePop, backgroundColor:'rgba(59,139,221,0.7)', borderColor:C.blue, borderWidth:0.5, borderRadius:3 }]
+});
+
+// ================================================================
+// ECONOMY CHARTS
+// ================================================================
+const provUMP = [
+  ['DKI Jakarta',5.40],['Kaltim',3.58],['Kaltara',3.58],['Papua*',4.29],
+  ['Sulut',3.78],['Riau',3.51],['Babel',3.88],['Kalteng',3.47],
+  ['Jateng',2.17],['Jabar',2.19],['DIY',2.26],['Jatim',2.31]
+];
+mk('c-ump','bar',{
+  labels: provUMP.map(d=>d[0]),
+  datasets:[{ label:'UMP 2025 (juta IDR)', data:provUMP.map(d=>d[1]),
+    backgroundColor: provUMP.map((d,i)=>i<8?'rgba(29,185,122,0.7)':'rgba(232,32,60,0.5)'),
+    borderColor: provUMP.map((d,i)=>i<8?C.teal:C.red),
+    borderWidth:0.5, borderRadius:4 }]
+},{
+  indexAxis:'y',
+  scales:{ x:{ ...defOpts.scales.x }, y:{ ...defOpts.scales.y, ticks:{ ...defOpts.scales.y.ticks, font:{ size:10, family:'JetBrains Mono' } } } }
+});
+
+const infGroups = ['Umum','Makanan&Minuman','Pakaian','Perumahan','Perabot RT','Kesehatan','Transportasi','Info&Komuni','Rekreasi','Pendidikan','Restoran','Perawatan Pribadi'];
+const inf2024 = [1.57,1.90,1.16,0.59,1.04,1.93,-0.30,-0.27,1.17,1.94,2.48,7.02];
+const inf2025 = [2.92,4.58,0.66,1.62,0.20,1.83,1.23,-0.28,1.17,1.22,1.46,13.33];
+mk('c-inflation-sector','bar',{
+  labels:infGroups,
+  datasets:[
+    { label:'2024 (%)', data:inf2024, backgroundColor:'rgba(59,139,221,0.5)', borderColor:C.blue, borderWidth:0.5, borderRadius:3 },
+    { label:'2025 (%)', data:inf2025, backgroundColor:'rgba(232,32,60,0.7)', borderColor:C.red, borderWidth:0.5, borderRadius:3 }
+  ]
+},{
+  indexAxis:'y',
+  plugins:{ legend:{ display:true, labels:{ color:C.text, boxWidth:10, font:{ size:11 } } } },
+  scales:{ x:{ ...defOpts.scales.x }, y:{ ...defOpts.scales.y, ticks:{ font:{ size:10, family:'JetBrains Mono' } } } }
+});
+
+const riceYears = ['2022','2023','2024','2025'];
+mk('c-rice','line',{
+  labels: riceYears,
+  datasets:[
+    { label:'Jakarta', data:[12155,13375,14851,15238], borderColor:C.red, tension:0.3, pointRadius:4 },
+    { label:'Banjarmasin', data:[14226,16410,16671,18799], borderColor:C.gold, tension:0.3, pointRadius:4 },
+    { label:'Makassar', data:[10394,11990,13849,14332], borderColor:C.teal, tension:0.3, pointRadius:4 },
+    { label:'Jayapura', data:[13450,14535,16519,17028], borderColor:C.blue, tension:0.3, pointRadius:4 }
+  ]
+});
+
+mk('c-fdi','bar',{
+  labels:['Singapura','China','Hong Kong','Jepang','USA','Belanda','Korsel','Australia'],
+  datasets:[
+    { label:'FDI 2025 (juta USD)', data:[17407,7507,10646,3129,2974,1103,1984,719],
+      backgroundColor:['rgba(29,185,122,0.8)','rgba(232,32,60,0.7)','rgba(240,162,40,0.7)','rgba(59,139,221,0.7)','rgba(155,93,229,0.7)','rgba(29,185,122,0.5)','rgba(232,32,60,0.5)','rgba(59,139,221,0.5)'],
+      borderRadius:4 }
+  ]
+});
+
+const povYears = ['2017M','2017S','2018M','2018S','2019M','2019S','2020M','2020S','2021M','2021S','2022M','2022S','2023M','2024M','2024S','2025M','2025S'];
+mk('c-poverty-trend','line',{
+  labels: povYears,
+  datasets:[
+    { label:'Nasional (%)', data:[10.64,10.12,9.82,9.66,9.41,9.22,9.78,10.19,10.14,9.71,9.54,9.57,9.36,9.03,8.57,8.47,8.25], borderColor:C.red, tension:0.3, pointRadius:2 },
+    { label:'Kota (%)', data:[7.72,7.26,7.02,6.89,6.69,6.56,7.38,7.88,7.89,7.60,7.50,7.53,7.29,7.09,6.66,6.73,6.60], borderColor:C.gold, tension:0.3, pointRadius:2 },
+    { label:'Desa (%)', data:[13.93,13.47,13.20,13.10,12.85,12.60,12.82,13.20,13.10,12.53,12.29,12.36,12.22,11.79,11.34,11.03,10.72], borderColor:C.blue, tension:0.3, pointRadius:2 }
+  ]
+});
+mk('c-poverty-line','line',{
+  labels: ['2017M','2018M','2019M','2020M','2021M','2022M','2023M','2024M','2025M'],
+  datasets:[
+    { label:'Kota (IDR)', data:[385621,415614,442062,471882,489848,521494,569299,601871,629561], borderColor:C.teal, tension:0.4, pointRadius:3, fill:true, backgroundColor:'rgba(29,185,122,0.08)' },
+    { label:'Desa (IDR)', data:[361496,383908,404398,433281,450185,484209,525050,556874,580349], borderColor:C.blue, tension:0.4, pointRadius:3, fill:true, backgroundColor:'rgba(59,139,221,0.06)' }
+  ]
+});
+
+// ================================================================
+// EMPLOYMENT CHARTS
+// ================================================================
+const provTPT = [
+  ['Banten',6.69],['Jawa Barat',6.77],['DKI Jakarta',6.05],['Kep. Riau',6.45],['Sulawesi Utara',5.99],
+  ['Papua',6.96],['Papua Barat Daya',6.85],['Maluku',6.27],['Kal. Timur',5.18],['Sumatera Utara',5.32],
+  ['Sumatera Barat',5.62],['Aceh',5.64],['Maluku Utara',4.55],['Papua Barat',4.55],['Jambi',4.26],
+  ['Jawa Tengah',4.66],['Lampung',4.21],['Kal. Tengah',3.97],['Kal. Selatan',4.16],['Kal. Barat',4.82],
+  ['NTT',3.31],['NTB',3.06],['Sulawesi Tenggara',3.31],['DI Yogyakarta',3.46],['Bengkulu',3.41],
+  ['Sulawesi Selatan',4.21],['Riau',4.16],['Jawa Timur',3.88],['Bali',1.49],
+  ['Papua Tengah',3.62],['Papua Selatan',4.04],['Papua Pegunungan',1.68]
+].sort((a,b)=>b[1]-a[1]);
+mk('c-tpt','bar',{
+  labels: provTPT.map(d=>d[0]),
+  datasets:[{ label:'TPT Aug 2025 (%)', data:provTPT.map(d=>d[1]),
+    backgroundColor: provTPT.map(d=>d[1]>=6?'rgba(232,32,60,0.8)':d[1]>=4?'rgba(240,162,40,0.7)':'rgba(29,185,122,0.6)'),
+    borderRadius:3, borderWidth:0 }]
+},{
+  indexAxis:'y',
+  scales:{ x:{ ...defOpts.scales.x, max:8 }, y:{ ...defOpts.scales.y, ticks:{ font:{ size:10, family:'JetBrains Mono' } } } }
+});
+
+const ageGrp = ['15-19','20-24','25-29','30-34','35-39','40-44','45-49','50-54','55-59','60+'];
+mk('c-wage-age','line',{
+  labels: ageGrp,
+  datasets:[
+    { label:'Mining (B)', data:[2955403,4036466,4696421,4895957,5160369,5460701,5148078,7526177,5091931,3835180], borderColor:C.red, tension:0.4, pointRadius:3 },
+    { label:'Electricity (D)', data:[3144045,3264319,4250029,4464656,5534345,6567864,4305037,null,5216241,6678938], borderColor:C.gold, tension:0.4, pointRadius:3 },
+    { label:'Manufacturing (C)', data:[2198539,2877839,3293920,3482530,3573512,3528767,3624162,3496880,3073200,2134242], borderColor:C.teal, tension:0.4, pointRadius:3 },
+    { label:'Agriculture (A)', data:[1937955,2417742,2562731,2711568,2829964,2603450,2671995,2696556,2272254,2064374], borderColor:C.blue, tension:0.4, pointRadius:3 }
+  ]
+});
+
+mk('c-informal-age','bar',{
+  labels:['15-24','25-54','55+','Total'],
+  datasets:[{ label:'Pendapatan Informal (IDR)', data:[1651552,2084846,1661205,1940844],
+    backgroundColor:['rgba(59,139,221,0.7)','rgba(29,185,122,0.7)','rgba(240,162,40,0.7)','rgba(232,32,60,0.8)'],
+    borderRadius:4 }]
+});
+
+// ================================================================
+// SOCIAL CHARTS
+// ================================================================
+mk('c-smoke','bar',{
+  labels:['15-24','25-34','35-44','45-54','55-64','65+'],
+  datasets:[{ label:'Prevalensi Merokok 2025 (%)',
+    data:[18.73,32.58,35.19,33.29,28.70,20.88],
+    backgroundColor:['rgba(59,139,221,0.7)','rgba(240,162,40,0.8)','rgba(232,32,60,0.9)','rgba(232,32,60,0.8)','rgba(240,162,40,0.7)','rgba(59,139,221,0.6)'],
+    borderRadius:4 }]
+});
+
+mk('c-divorce','bar',{
+  labels:['Penelantaran','Judi','Alkohol','Penjara','Selingkuh','Narkoba'],
+  datasets:[{ label:'Jumlah Kasus 2025',
+    data:[31029,4623,2033,1390,1147,494],
+    backgroundColor:['rgba(232,32,60,0.85)','rgba(240,162,40,0.8)','rgba(59,139,221,0.7)','rgba(155,93,229,0.7)','rgba(29,185,122,0.7)','rgba(232,32,60,0.4)'],
+    borderRadius:4 }]
+},{
+  indexAxis:'y',
+  scales:{ x:{ ...defOpts.scales.x }, y:{ ...defOpts.scales.y, ticks:{ font:{ size:11, family:'JetBrains Mono' } } } }
+});
+
+const happyProvs = [['Maluku Utara',76.34],['Maluku',76.28],['Kalimantan Utara',76.33],['Sulawesi Utara',74.96],['Sulawesi Tengah',74.46],['Gorontalo',74.77],['Jambi',75.17],['Sulawesi Tenggara',73.98],['Kalteng',73.13],['Kaltim',73.49],['Sulsel',73.07],['Jatim',72.08],['Jateng',71.73],['Riau',71.80],['DIY',71.70],['Aceh',71.24],['Lampung',71.64],['Jawa Barat',70.23],['DKI Jakarta',70.68],['Banten',68.08]].sort((a,b)=>a[1]-b[1]);
+mk('c-happy','bar',{
+  labels: happyProvs.map(d=>d[0]),
+  datasets:[{ label:'Indeks Kebahagiaan 2021',
+    data: happyProvs.map(d=>d[1]),
+    backgroundColor: happyProvs.map(d=>d[0]==='DKI Jakarta'?'rgba(232,32,60,0.8)':d[0]==='Banten'?'rgba(232,32,60,0.6)':d[1]>=74?'rgba(29,185,122,0.7)':'rgba(59,139,221,0.6)'),
+    borderRadius:3, borderWidth:0 }]
+},{
+  indexAxis:'y',
+  scales:{ x:{ ...defOpts.scales.x, min:67, max:78 }, y:{ ...defOpts.scales.y, ticks:{ font:{ size:10, family:'JetBrains Mono' } } } }
+});
+
+mk('c-marriage','bar',{
+  labels:['2023','2024','2025'],
+  datasets:[
+    { label:'Pernikahan (juta)', data:[1.577,1.478,1.480], backgroundColor:'rgba(29,185,122,0.7)', borderRadius:4 },
+    { label:'Perceraian (juta 2023 only)', data:[0.464,null,null], backgroundColor:'rgba(232,32,60,0.7)', borderRadius:4 }
+  ]
+},{
+  plugins:{ legend:{ display:true, labels:{ color:C.text, boxWidth:10, font:{size:11} } } }
+});
+
+mk('c-edu','bar',{
+  labels:['Tidak lulus','SD','SMP','SMA/SMK','Perguruan Tinggi'],
+  datasets:[
+    { label:'Urban 2025 (%)', data:[7.92,19.33,21.58,36.84,14.33], backgroundColor:'rgba(29,185,122,0.7)', borderRadius:3 },
+    { label:'Rural 2025 (%)', data:[16.52,30.71,23.82,22.91,6.03], backgroundColor:'rgba(232,32,60,0.7)', borderRadius:3 }
+  ]
+},{
+  plugins:{ legend:{ display:true, labels:{ color:C.text, boxWidth:10, font:{size:11} } } }
+});
+
+// ================================================================
+// DIGITAL CHARTS
+// ================================================================
+const provInternet = [
+  ['Kepulauan Riau',98.41],['DKI Jakarta',98.19],['Kaltim',96.07],['Kaltara',96.18],['Banten',95.34],
+  ['Riau',95.29],['Bali',94.21],['Sumatera Barat',94.13],['Kal. Barat',94.14],['Jawa Barat',92.31],
+  ['Lampung',93.86],['Babel',93.84],['Sumut',93.34],['Jambi',92.51],['Sumsel',92.91],
+  ['Kalteng',93.98],['Maluku',92.62],['DIY',91.58],['Sulsel',93.92],['Bengkulu',92.83],
+  ['Sulut',91.14],['Aceh',91.91],['Sultra',92.84],['Malut',91.78],['Kalsel',90.39],
+  ['Jawa Tengah',90.67],['NTB',88.81],['Jawa Timur',88.89],['Sulbar',92.72],['NTT',87.28],
+  ['Papua Barat',89.47],['Papua',84.47],['Papua Selatan',68.86],['Papua Tengah',41.98],['Papua Pegunungan',26.61]
+].sort((a,b)=>a[1]-b[1]);
+
+mk('c-internet','bar',{
+  labels: provInternet.map(d=>d[0]),
+  datasets:[{ label:'Internet RT 2025 (%)', data:provInternet.map(d=>d[1]),
+    backgroundColor: provInternet.map(d=>d[1]>=90?'rgba(29,185,122,0.7)':d[1]>=70?'rgba(240,162,40,0.7)':'rgba(232,32,60,0.8)'),
+    borderRadius:3, borderWidth:0 }]
+},{
+  indexAxis:'y',
+  scales:{ x:{ ...defOpts.scales.x, min:0, max:100 }, y:{ ...defOpts.scales.y, ticks:{ font:{ size:10, family:'JetBrains Mono' } } } }
+});
+
+mk('c-internet-trend','line',{
+  labels:['2022','2023','2024','2025'],
+  datasets:[
+    { label:'Nasional (%)', data:[86.54,87.09,89.76,91.66], borderColor:C.teal, tension:0.4, pointRadius:4, fill:true, backgroundColor:'rgba(29,185,122,0.1)' },
+    { label:'Papua Pegunungan (%)', data:[null,null,12.15,26.61], borderColor:C.red, tension:0.4, pointRadius:4, borderDash:[4,3] }
+  ]
+},{
+  plugins:{ legend:{ display:true, labels:{ color:C.text, boxWidth:10, font:{size:11} } } }
+});
+
+mk('c-umkm','bar',{
+  labels:['Perdagangan','Pertanian','Manufaktur','Jasa Lainnya','Konstruksi','Transportasi','Akomodasi/Resto','Real Estate'],
+  datasets:[{ label:'Kredit UMKM 2025 (T IDR)',
+    data:[670,292,143,76,53,54,74,22],
+    backgroundColor:['rgba(29,185,122,0.8)','rgba(59,139,221,0.7)','rgba(240,162,40,0.7)','rgba(155,93,229,0.6)','rgba(232,32,60,0.6)','rgba(29,185,122,0.5)','rgba(240,162,40,0.5)','rgba(59,139,221,0.5)'],
+    borderRadius:4 }]
+},{
+  indexAxis:'y',
+  scales:{ x:{ ...defOpts.scales.x }, y:{ ...defOpts.scales.y, ticks:{ font:{ size:10, family:'JetBrains Mono' } } } }
+});
+
+// ================================================================
+// CONTENT PIPELINE DATA
+// ================================================================
+const contentIdeas = [
+  { id:1, hook:'Anak muda Indonesia dibayar Rp 1,9 juta — data resmi BPS', angle:'Upah sektor pertanian usia 15-19 = Rp 1,9 juta vs UMP Jakarta Rp 5,4 juta. Format: before/after slider visual.', tags:['ekonomi','viral'], priority:'hot', chart:'Bar Chart', dataset:'03_avg_wage_by_age_group' },
+  { id:2, hook:'Kerja di Jakarta vs Jawa Tengah: beda Rp 3,2 juta per bulan', angle:'UMP semua 34 provinsi 2025 diurutkan dari tertinggi ke terendah. Konten migrasi kerja.', tags:['ekonomi','viral'], priority:'hot', chart:'Horizontal Bar', dataset:'04_ump_by_province' },
+  { id:3, hook:'Garis kemiskinan Indonesia = Rp 22.100 per hari', angle:'Visualisasi apa yang bisa dibeli dengan Rp 22.100 di 2025 vs biaya nyata. Emotional hook.', tags:['sosial','viral'], priority:'hot', chart:'Infographic', dataset:'05_poverty_data' },
+  { id:4, hook:'463.000 perceraian setahun — alasan terbesarnya bukan selingkuh', angle:'Bar chart faktor cerai: penelantaran (31K), judi (4.6K), alkohol (2K), selingkuh (1.1K). Counter-intuitive.', tags:['sosial','viral'], priority:'hot', chart:'Horizontal Bar', dataset:'09_divorce_causes' },
+  { id:5, hook:'1 dari 3 pria usia 30-an Indonesia aktif merokok', angle:'Kurva "naik-lalu-turun" prevalensi merokok per kelompok umur. Puncak di 35-44 = 35,19%.', tags:['sosial','viral'], priority:'hot', chart:'Line Chart', dataset:'07_smoking_rate' },
+  { id:6, hook:'Orang Maluku lebih bahagia dari orang Jakarta — datanya ada di sini', angle:'Paradoks kebahagiaan: kota besar tidak otomatis = bahagia. Maluku 76,28 vs Jakarta 70,68.', tags:['sosial','viral'], priority:'hot', chart:'Map/Bar', dataset:'11_happiness_index' },
+  { id:7, hook:'Banten pengangguran 7% — lebih tinggi dari Papua yang 1,6%', angle:'Paradoks: daerah "maju" secara ekonomi justru lebih sulit cari kerja. Format ranking.', tags:['ekonomi','viral'], priority:'hot', chart:'Horizontal Bar', dataset:'02_unemployment' },
+  { id:8, hook:'Hanya 11% orang Indonesia lulusan S1 ke atas', angle:'Piramida pendidikan Indonesia. Tidak punya ijazah = 11,37%. Di desa PT hanya 6%.', tags:['sosial'], priority:'warm', chart:'Stacked Bar', dataset:'eduhighest' },
+  { id:9, hook:'Jarak 30 poin antara Jakarta dan Papua Pegunungan dalam HDI', angle:'Gap pembangunan manusia terbesar: DKI 85,05 vs Papua Pegunungan 54,91. Timeline 5 tahun.', tags:['sosial'], priority:'warm', chart:'Multi-line Chart', dataset:'06_hdi_by_province' },
+  { id:10, hook:'44 juta anak muda 20–29 tahun — siapa yang menentukan Indonesia?', angle:'Bonus demografi visual: kelompok usia produktif terbesar. Piramida penduduk 2026.', tags:['sosial'], priority:'warm', chart:'Population Pyramid', dataset:'10_population_by_age' },
+  { id:11, hook:'Jutaan pekerja informal, gaji Rp 1,6 juta — ini realitanya', angle:'Pekerja informal usia muda = Rp 1,65 juta/bln. Di bawah UMP dan tidak ada proteksi kerja.', tags:['ekonomi'], priority:'warm', chart:'Scatter Plot', dataset:'03_informal_income' },
+  { id:12, hook:'Internet 98% di Jakarta, tapi 26% di Papua Pegunungan', angle:'Digital divide Indonesia 2025. Gap terbesar di dunia dalam satu negara.', tags:['digital','viral'], priority:'hot', chart:'Choropleth Map', dataset:'12_internet_access' },
+  { id:13, hook:'Investasi asing Singapura kalahkan China jauh-jauh — ini datanya', angle:'FDI 2025: Singapura $17,4M vs China $7,5M. Siapa sebenarnya mitra investor terbesar kita?', tags:['ekonomi'], priority:'warm', chart:'Bar Chart', dataset:'16_fdi_by_country' },
+  { id:14, hook:'Harga beras Banjarmasin Rp 18.800 — mahal mana vs Jakarta?', angle:'Disparitas harga beras antar kota 2022-2025. Trend naik konsisten sejak 2022.', tags:['ekonomi','viral'], priority:'warm', chart:'Multi-line Chart', dataset:'17_rice_prices' },
+  { id:15, hook:'GDP naik 5x dalam 9 tahun, tapi 23 juta masih miskin — ada apa?', angle:'Pertumbuhan GDP vs kemiskinan absolut: paradoks distribusi. Konten ekonomi kritis.', tags:['ekonomi'], priority:'warm', chart:'Dual-axis Chart', dataset:'01_key_statistics' },
+  { id:16, hook:'UMP naik 6,5% tapi makanan inflasi 4,58% — daya beli benar naik?', angle:'Kalkulasi real purchasing power: UMP 2025 vs inflasi sektoral 2025. Siapa yang menang?', tags:['ekonomi','viral'], priority:'hot', chart:'Comparison Chart', dataset:'15_inflation_by_expenditure' },
+  { id:17, hook:'Nikah turun 100.000 dalam 2 tahun — Gen Z ogah nikah?', angle:'Dari 1,577 juta (2023) ke 1,480 juta (2025). Tren anti-nikah atau ekonomi susah?', tags:['sosial','viral'], priority:'hot', chart:'Bar Chart', dataset:'08_marriage_divorce' },
+  { id:18, hook:'Separuh rakyat Indonesia BPJS gratis — tapi siapa yang bayarnya?', angle:'48,56% populasi pakai BPJS PBI (subsidi negara). Implikasi fiskal untuk generasi muda.', tags:['sosial'], priority:'warm', chart:'Waffle Chart', dataset:'insurance_coverage' },
+  { id:19, hook:'Kredit UMKM Rp 1.500 triliun — siapa yang paling banyak dapat?', angle:'Distribusi kredit UMKM per sektor: perdagangan 44%, pertanian 19%. Format treemap.', tags:['ekonomi'], priority:'warm', chart:'Treemap', dataset:'18_umkm_credit' },
+  { id:20, hook:'Bank tutup 8.000 kantor dalam 4 tahun — tanda apa?', angle:'Bank offices turun dari 32.531 (2021) ke 23.630 (2025). Transisi digital banking nyata.', tags:['digital','ekonomi'], priority:'warm', chart:'Line Chart', dataset:'19_bank_offices' },
+  { id:21, hook:'Kemiskinan turun ke 8,25% — tapi standarnya hanya Rp 22.100/hari', angle:'BPS menetapkan garis kemiskinan yang rendah. Jika menggunakan standar $3,65/hari (Bank Dunia)?', tags:['sosial','viral'], priority:'hot', chart:'Threshold Chart', dataset:'05_poverty_data' },
+  { id:22, hook:'Kalimantan Timur: upah formal tertinggi, tapi pengangguran 5%', angle:'IKN effect: upah mining Kaltim Rp 4,4 juta tapi TPT 5,18%. Siapa yang benar-benar untung?', tags:['ekonomi'], priority:'warm', chart:'Dual Metric', dataset:'multi' },
+  { id:23, hook:'Pekerja 50-54 di pertambangan dapat Rp 7,5 juta — tapi di usia berapa puncaknya?', angle:'Kurva usia-upah per industri: kapan puncak karir finansial Anda? Berbeda per sektor.', tags:['ekonomi','viral'], priority:'hot', chart:'Line Chart', dataset:'03_avg_wage_by_age_group' },
+  { id:24, hook:'Papua Tengah HDI 60 — sama dengan Indonesia tahun 2003', angle:'Pembangunan Papua Tengah terlambat 20 tahun dari rata-rata nasional. Visual timeline comparison.', tags:['sosial'], priority:'warm', chart:'Timeline', dataset:'06_hdi_by_province' },
+  { id:25, hook:'Inflasi perawatan pribadi 13,33% — salon & barbershop naik gila-gilaan', angle:'Pengeluaran perawatan pribadi adalah kelompok inflasi tertinggi 2025, kalahkan makanan dan pendidikan.', tags:['ekonomi','viral'], priority:'hot', chart:'Bar Chart', dataset:'15_inflation' },
+  { id:26, hook:'Laki-laki vs perempuan: gap akses internet masih 5 poin di 2025', angle:'Internet access: laki-laki 80,18% vs perempuan 75,08%. Gap terbesar di Papua (5,75%).', tags:['digital','sosial'], priority:'warm', chart:'Side-by-side Bar', dataset:'14_internet_by_gender' },
+  { id:27, hook:'Kepemilikan HP wanita hanya 66,88% — tapi punya IG?', angle:'Gender gap HP ownership vs asumsi media sosial. Implikasi untuk target audiens konten digital.', tags:['digital'], priority:'warm', chart:'Comparison', dataset:'13_cellphone_ownership' },
+  { id:28, hook:'China jadi investor dengan proyek terbanyak (35.189) di 2025', angle:'Dari 2023 ke 2025: proyek China naik 5x lipat (6.833 → 35.189). Tapi nilai per proyek kecil.', tags:['ekonomi','viral'], priority:'hot', chart:'Bubble Chart', dataset:'16_fdi_by_country' },
+  { id:29, hook:'Angka Melek Huruf 97% — tapi hanya 11% yang lanjut ke PT', angle:'Paradoks literasi vs pendidikan tinggi. Semua bisa baca, tapi akses perguruan tinggi sangat timpang.', tags:['sosial'], priority:'warm', chart:'Funnel Chart', dataset:'01_key_statistics' },
+  { id:30, hook:'Kemiskinan desa turun dari 13,93% ke 10,72% — lebih cepat dari kota', angle:'Rural poverty reduction rate lebih cepat dari urban. Apakah program desa berhasil? Data 2017-2025.', tags:['sosial','ekonomi'], priority:'warm', chart:'Dual Line', dataset:'05_poverty_data' }
+];
+
+let activeTag = 'all';
+function renderContent(ideas) {
+  const list = document.getElementById('content-list');
+  list.innerHTML = ideas.map(c => `
+    <div class="pipeline-card" data-tags="${c.tags.join(' ')}" data-priority="${c.priority}">
+      <div class="pipeline-row">
+        <div class="pipeline-num">#${String(c.id).padStart(2,'0')}</div>
+        <div class="pipeline-content">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+            <div class="pipeline-hook">${c.hook}</div>
+            <span class="priority-badge ${c.priority==='hot'?'p-hot':c.priority==='warm'?'p-warm':'p-cool'}">${c.priority==='hot'?'🔥 VIRAL':'⚡ GOOD'}</span>
+          </div>
+          <div class="pipeline-meta">
+            <span>${c.chart}</span>
+            <span>${c.dataset}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px">${c.angle}</div>
+          <div class="insight-tags">
+            ${c.tags.map(t=>`<span class="tag ${t==='ekonomi'?'tag-gold':t==='sosial'?'tag-teal':t==='digital'?'tag-blue':'tag-red'}">${t}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterContent() {
+  const q = document.getElementById('content-search').value.toLowerCase();
+  let ideas = contentIdeas;
+  if (activeTag !== 'all' && activeTag !== 'viral') ideas = ideas.filter(c => c.tags.includes(activeTag));
+  if (activeTag === 'viral') ideas = ideas.filter(c => c.priority === 'hot');
+  if (q) ideas = ideas.filter(c => c.hook.toLowerCase().includes(q) || c.angle.toLowerCase().includes(q) || c.tags.join(' ').includes(q));
+  renderContent(ideas);
+}
+
+function filterByTag(tag, btn) {
+  activeTag = tag;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterContent();
+}
+
+renderContent(contentIdeas);
+
+// ================================================================
+// DATASETS LIST
+// ================================================================
+const datasets = [
+  { id:'01', name:'Key Statistics 2016–2025', desc:'20 indikator nasional × 10 tahun — ekonomi & sosial', rows:'20 ind.', cols:'12', size:'3KB' },
+  { id:'02', name:'Unemployment by Province 2024–2025', desc:'TPT & TPAK per 38 provinsi, Feb & Aug', rows:'38', cols:'9', size:'4KB' },
+  { id:'03', name:'Average Wage by Age Group 2025', desc:'Upah rata-rata 10 kelompok umur × 9 sektor industri', rows:'11', cols:'10', size:'2KB' },
+  { id:'04', name:'UMP by Province 2023–2025', desc:'Upah Minimum Provinsi + growth rate 34 provinsi', rows:'35', cols:'5', size:'3KB' },
+  { id:'05', name:'Poverty Data 2017–2025', desc:'Garis kemiskinan, jumlah & persentase miskin, 17 periode', rows:'17', cols:'9', size:'4KB' },
+  { id:'06', name:'HDI by Province 2021–2025', desc:'Indeks Pembangunan Manusia 38 provinsi × 5 tahun', rows:'39', cols:'7', size:'3KB' },
+  { id:'07', name:'Smoking Rate Province & Age 2025', desc:'Prevalensi merokok 38 provinsi × 6 kelompok umur', rows:'39', cols:'8', size:'4KB' },
+  { id:'08', name:'Marriage & Divorce 2023–2025', desc:'Pernikahan & perceraian per provinsi 3 tahun', rows:'35', cols:'7', size:'3KB' },
+  { id:'09', name:'Divorce Causes 2025', desc:'Faktor penyebab cerai per provinsi (selingkuh, judi, narkoba, dll)', rows:'35', cols:'8', size:'3KB' },
+  { id:'10', name:'Population by Age 2025–2026', desc:'Proyeksi penduduk 16 kelompok umur × jenis kelamin', rows:'17', cols:'7', size:'2KB' },
+  { id:'11', name:'Happiness Index 2021', desc:'Indeks kebahagiaan & sub-indeks 20 provinsi', rows:'21', cols:'7', size:'2KB' },
+  { id:'12', name:'Internet Access Household 2022–2025', desc:'% RT akses internet 38 provinsi × 4 tahun', rows:'39', cols:'6', size:'3KB' },
+  { id:'13', name:'Cellphone Ownership 2025', desc:'% kepemilikan HP per provinsi & jenis kelamin', rows:'37', cols:'4', size:'2KB' },
+  { id:'14', name:'Internet Access by Gender 2025', desc:'% akses internet laki-laki vs perempuan per provinsi', rows:'17', cols:'4', size:'2KB' },
+  { id:'15', name:'Inflation by Expenditure Group 2024–2025', desc:'Laju inflasi 11 kelompok pengeluaran', rows:'12', cols:'3', size:'1KB' },
+  { id:'16', name:'FDI by Country 2023–2025', desc:'Investasi asing & jumlah proyek per negara', rows:'21', cols:'7', size:'2KB' },
+  { id:'17', name:'Rice Retail Prices 2022–2025', desc:'Harga eceran beras 38 kota/kabupaten × 4 tahun', rows:'39', cols:'5', size:'3KB' },
+  { id:'18', name:'UMKM Bank Credit by Sector 2025', desc:'Posisi kredit UMKM per sektor usaha (Rp miliar)', rows:'22', cols:'2', size:'1KB' },
+  { id:'19', name:'Bank Offices 2021–2025', desc:'Jumlah bank & kantor per tipe bank 5 tahun', rows:'9', cols:'11', size:'2KB' }
+];
+
+document.getElementById('datasets-list').innerHTML = `
+  <div class="table-scroll">
+    <table class="data-table" style="min-width:700px">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Nama Dataset</th>
+          <th>Deskripsi</th>
+          <th style="text-align:right">Baris</th>
+          <th style="text-align:right">Kolom</th>
+          <th style="text-align:right">Size</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${datasets.map(d=>`
+          <tr>
+            <td class="prov num" style="color:var(--brand-red)">${d.id}</td>
+            <td class="prov" style="white-space:nowrap">${d.name}</td>
+            <td style="font-size:11px;color:var(--text2)">${d.desc}</td>
+            <td class="num">${d.rows}</td>
+            <td class="num">${d.cols}</td>
+            <td class="num">${d.size}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:1.5rem;padding:1.25rem;background:var(--surface2);border-radius:10px;border:1px solid var(--border)">
+    <div class="card-title" style="margin-bottom:0.75rem">Automation Pipeline Recommendation</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7">
+      <strong style="color:var(--teal)">Langkah 1:</strong> Download semua 19 CSV → upload ke Google Sheets atau Airtable sebagai database master.<br>
+      <strong style="color:var(--gold)">Langkah 2:</strong> Hubungkan ke Make.com atau n8n — trigger otomatis ketika ada update BPS baru.<br>
+      <strong style="color:var(--blue)">Langkah 3:</strong> Auto-generate chart via ChartExpo atau Datawrapper API → output gambar siap posting.<br>
+      <strong style="color:var(--brand-red)">Langkah 4:</strong> Gunakan Claude API sebagai copywriter: input = data row → output = hook + caption + script.<br>
+      <strong style="color:var(--text)">Langkah 5:</strong> Jadwalkan post via Buffer/Later — konten data-driven autopilot setiap hari.
+    </div>
+  </div>
+`;
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+# surveilencemaxxing (legacy dashboard — keep for reference)
+flask>=3.0.0
+apscheduler>=3.10.0
+requests>=2.31.0
+feedparser>=6.0.0
+pytrends>=4.9.0
+yfinance>=0.2.40
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+python-dateutil>=2.9.0
+
+# ─── n2nd / Attention Boost ────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+
+supabase>=2.4.0
+upstash-redis>=1.0.0
+
+httpx>=0.27.0
+
+spacy>=3.7.0
+langdetect>=1.0.9
+nltk>=3.8.0
+
+openai>=1.30.0
+litellm>=1.40.0
+
+pydantic>=2.7.0
+python-dotenv>=1.0.0
+
+boto3>=1.34.0
