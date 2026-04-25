@@ -88,15 +88,12 @@ n2nd/
 
 | Layer | Tech |
 |---|---|
-| Frontend | Next.js 15, Tailwind, shadcn/ui |
-| Backend | FastAPI (Python) |
-| DB | Supabase (Postgres + pgvector) |
-| Cache | Upstash Redis |
-| Storage | Cloudflare R2 |
-| Auth | Supabase Auth |
-| Embed | text-embedding-3-small |
-| LLM | abstracted via LiteLLM (default: gpt-4o-mini) |
-| Deploy | Railway (API) + Vercel (dashboard) |
+| Frontend + API | Next.js 15, Tailwind (App Router + API Routes) |
+| DB | — (tidak ada, data dari RSS + public APIs + static BPS) |
+| Auth | — (tidak ada login/signup) |
+| Deploy | Firebase App Hosting (n2nd-xolvon-ai, backend: n2nd-web) |
+| Bot mitigation | Cloudflare (proxy + WAF) |
+| Data sources | BPS static, RSS feeds, ExchangeRate API, CoinGecko, Yahoo Finance |
 
 ---
 

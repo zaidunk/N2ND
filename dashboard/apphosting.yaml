@@ -5,15 +5,5 @@ runConfig:
   cpu: 1
   memoryMiB: 512
 
-env:
-  - variable: NEXT_PUBLIC_POSTHOG_HOST
-    value: https://app.posthog.com
-    availability:
-      - BUILD
-      - RUNTIME
-
-# Set these via Firebase Console → App Hosting → backend n2nd-web → Environment variables:
-#   NEXT_PUBLIC_API_URL         → https://your-railway-api.up.railway.app
-#   NEXT_PUBLIC_SUPABASE_URL    → https://xxxxx.supabase.co
-#   NEXT_PUBLIC_SUPABASE_ANON_KEY → eyJ...
-#   NEXT_PUBLIC_POSTHOG_KEY     → phc_...
+# Environment variables — set via Firebase Console:
+#   NEXT_PUBLIC_API_URL  (optional, empty = use internal API routes)

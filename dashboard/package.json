@@ -1,6 +1,6 @@
 {
   "name": "n2nd-dashboard",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "engines": {
     "node": "20.x"
@@ -15,13 +15,9 @@
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@supabase/supabase-js": "^2.43.0",
-    "@supabase/ssr": "^0.4.0",
     "lucide-react": "^0.400.0",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^2.3.0",
-    "class-variance-authority": "^0.7.0",
-    "posthog-js": "^1.130.0"
+    "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
