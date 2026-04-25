@@ -52,26 +52,41 @@ async def lifespan(app: FastAPI):
     )
 
     # Phase 0: Redis
-    await init_redis()
-    logger.info("Redis initialized")
+    try:
+        await init_redis()
+        logger.info("Redis initialized")
+    except Exception as e:
+        logger.warning("Redis init failed (check UPSTASH_REDIS_REST_URL): %s", e)
 
-    # Phase 1: Embeddings client (NLP models lazy-load on first ingest job)
-    init_embeddings()
-    logger.info("Embeddings client initialized")
+    # Phase 1: Embeddings client
+    try:
+        init_embeddings()
+        logger.info("Embeddings client initialized")
+    except Exception as e:
+        logger.warning("Embeddings init failed (check OPENAI_API_KEY): %s", e)
 
-    # Phase 2: Pre-init DB client (avoid cold spike on first request)
-    get_db_client()
-    logger.info("DB client initialized")
+    # Phase 2: Pre-init DB client
+    try:
+        get_db_client()
+        logger.info("DB client initialized")
+    except Exception as e:
+        logger.warning("DB client init failed (check SUPABASE_URL/KEY): %s", e)
 
     # Phase 3: BPS static data
-    from ingestion.bps import load_bps_to_redis
-    await load_bps_to_redis()
-    logger.info("BPS data loaded to Redis")
+    try:
+        from ingestion.bps import load_bps_to_redis
+        await load_bps_to_redis()
+        logger.info("BPS data loaded to Redis")
+    except Exception as e:
+        logger.warning("BPS load failed: %s", e)
 
     # Phase 4: Scheduler
-    from ingestion.scheduler import start_scheduler
-    start_scheduler()
-    logger.info("Ingestion scheduler started")
+    try:
+        from ingestion.scheduler import start_scheduler
+        start_scheduler()
+        logger.info("Ingestion scheduler started")
+    except Exception as e:
+        logger.warning("Scheduler start failed: %s", e)
 
     yield
 

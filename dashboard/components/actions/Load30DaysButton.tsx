@@ -14,12 +14,18 @@ export default function Load30DaysButton() {
         const res = await load30Days()
         if (res.status === "ok") {
           const total = res.summary?.last_30_days ?? 0
-          setMessage(`Selesai. ${total} data 30 hari siap dipakai.`)
+          setMessage(`Selesai. ${total} artikel siap. Refresh halaman.`)
+          setTimeout(() => window.location.reload(), 1500)
           return
         }
-        setMessage(res.detail ?? "Load data tidak berhasil.")
-      } catch {
-        setMessage("Gagal load data. Coba lagi.")
+        setMessage(res.detail ?? "Load tidak berhasil.")
+      } catch (err) {
+        const isNetwork = err instanceof TypeError && err.message.includes("fetch")
+        setMessage(
+          isNetwork
+            ? "API backend belum online. Set NEXT_PUBLIC_API_URL di Firebase Console."
+            : "Gagal load data. Cek koneksi API."
+        )
       }
     })
   }
