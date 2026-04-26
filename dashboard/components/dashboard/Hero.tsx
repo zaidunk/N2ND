@@ -1,67 +1,65 @@
-"use client"
-import { useState } from "react"
-
 const STREAMS = [
-  { label: "CNN Indonesia",  channelId: "UCt-ATsKKoRLDPcIKRBpwmzg" },
-  { label: "Kompas TV",      channelId: "UCu3OxzFBBBxbSKMLGVAm4NQ" },
-  { label: "CNBC Indonesia", channelId: "UCqJGKKkwRoLlP4yTaWMhEbA" },
+  {
+    label: "CNN Indonesia",
+    desc: "Breaking news & current affairs",
+    url: "https://www.youtube.com/@CNNIndonesia/live",
+    color: "border-red-500/30 hover:border-red-500/60",
+    accent: "text-red-400",
+  },
+  {
+    label: "Kompas TV",
+    desc: "Live streaming berita nasional",
+    url: "https://www.youtube.com/@kompastv/live",
+    color: "border-blue-500/30 hover:border-blue-500/60",
+    accent: "text-blue-400",
+  },
+  {
+    label: "CNBC Indonesia",
+    desc: "Bisnis, ekonomi & pasar saham live",
+    url: "https://www.youtube.com/@CNBCIndonesia/live",
+    color: "border-emerald-500/30 hover:border-emerald-500/60",
+    accent: "text-emerald-400",
+  },
 ]
 
 export default function Hero() {
-  const [q, setQ] = useState("")
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!q.trim()) return
-    window.open(
-      `https://chat.openai.com/?q=${encodeURIComponent("halo gpt saya dari xolvon.ai mau nanya tentang " + q)}`,
-      "_blank", "noopener,noreferrer"
-    )
-  }
-
   return (
-    <section className="pt-8 pb-6 px-4">
+    <section className="pt-4 pb-3 px-3">
       <div className="mx-auto max-w-[1400px]">
-        <div className="mb-5 text-center">
-          <h1 className="text-4xl font-extrabold text-text tracking-tight leading-none">
+        <div className="mb-3 text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-text tracking-tight leading-none">
             N2ND{" "}
-            <span className="text-muted text-2xl font-bold">by Xolvon.ai</span>
+            <span className="text-muted text-xl sm:text-2xl font-bold">by Xolvon.ai</span>
           </h1>
-          <p className="text-[11px] text-muted mt-2 tracking-widest uppercase">
+          <p className="text-[10px] text-muted mt-1.5 tracking-widest uppercase">
             Intelligence Dashboard · Data Indonesia Real-Time
           </p>
         </div>
 
-        <form onSubmit={submit} className="mb-6 flex gap-2 max-w-2xl mx-auto">
-          <input
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            placeholder="Tanya GPT tentang topik apapun — ekonomi, saham, berita..."
-            className="input flex-1 text-sm"
-          />
-          <button type="submit" className="btn-primary shrink-0 text-sm">
-            Tanya GPT
-          </button>
-        </form>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {STREAMS.map(s => (
-            <div key={s.channelId} className="card overflow-hidden">
-              <div className="px-3 py-1.5 text-[10px] font-extrabold text-muted border-b border-border flex items-center gap-1.5">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse-slow" />
-                {s.label} Live
+            <a
+              key={s.url}
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`card overflow-hidden transition-all duration-150 ${s.color} group`}
+            >
+              <div className="flex flex-col items-center justify-center py-5 px-3 text-center gap-2">
+                <div className="flex items-center gap-1.5 text-[9px] font-extrabold text-muted uppercase tracking-widest">
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse-slow`} />
+                  Live
+                </div>
+                <div className={`text-4xl opacity-60 group-hover:opacity-90 transition-opacity ${s.accent}`}>▶</div>
+                <div>
+                  <div className="text-[13px] font-extrabold text-text">{s.label}</div>
+                  <div className="text-[10px] text-muted mt-0.5">{s.desc}</div>
+                </div>
+                <span className={`mt-1 inline-flex items-center gap-1 rounded border border-current px-2 py-0.5 text-[9px] font-extrabold ${s.accent} opacity-70 group-hover:opacity-100 transition-opacity`}>
+                  Tonton di YouTube →
+                </span>
               </div>
-              <div className="aspect-video bg-surface2">
-                <iframe
-                  src={`https://www.youtube.com/embed/live_stream?channel=${s.channelId}&autoplay=0`}
-                  className="w-full h-full"
-                  loading="lazy"
-                  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={`${s.label} Live`}
-                />
-              </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>

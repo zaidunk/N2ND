@@ -27,7 +27,7 @@ export default function BPSViz() {
   const [tab, setTab] = useState<Tab>("Overview")
 
   return (
-    <section className="px-4 py-4">
+    <section className="px-2 sm:px-4 py-2">
       <div className="mx-auto max-w-[1400px]">
         <div className="card p-0 overflow-hidden">
           <div className="flex items-center justify-between px-4 pt-3 pb-0 border-b border-border">
@@ -49,18 +49,18 @@ export default function BPSViz() {
             <span className="text-[9px] text-muted pb-2">BPS · OJK · BI · IMF</span>
           </div>
 
-          <div className="p-4">
+          <div className="p-2 sm:p-4">
             {tab === "Overview" && (
               <div className="space-y-6">
                 <div>
-                  <SectionTitle title="Indikator Utama BPS 2025" subject="indikator ekonomi makro Indonesia BPS 2025" />
+                  <SectionTitle title="Indikator Utama BPS 2025" subject="indikator ekonomi makro Indonesia BPS 2025. Analisis: (1) interpretasi angka kemiskinan, pengangguran, dan IPM terkini, (2) perbandingan dengan target RPJMN 2025, (3) gap antar provinsi yang paling signifikan, (4) faktor struktural yang mempengaruhi, (5) rekomendasi kebijakan dan proyeksi 2026" />
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {BPS_INDICATORS.map(ind => <StatCard key={ind.label} {...ind} />)}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <SectionTitle title="Kemiskinan & Pengangguran" subject="tren kemiskinan dan pengangguran Indonesia" />
+                    <SectionTitle title="Kemiskinan & Pengangguran" subject="tren kemiskinan dan pengangguran Indonesia 2016-2025. Analisis: (1) faktor penyebab penurunan kemiskinan, (2) dampak pandemi COVID-19 terhadap kedua indikator, (3) kelompok demografis yang paling rentan, (4) program pemerintah yang paling efektif, (5) target dan proyeksi 2026-2030" />
                     <TrendChart
                       title=""
                       series={[
@@ -71,7 +71,7 @@ export default function BPSViz() {
                     />
                   </div>
                   <div>
-                    <SectionTitle title="GDP Growth & Inflasi" subject="pertumbuhan GDP dan inflasi Indonesia" />
+                    <SectionTitle title="GDP Growth & Inflasi" subject="pertumbuhan GDP dan inflasi Indonesia 2016-2025. Analisis: (1) sektor pendorong pertumbuhan utama, (2) transmisi kebijakan moneter BI terhadap inflasi, (3) perbandingan dengan negara ASEAN, (4) risiko resesi dan stagflasi, (5) proyeksi Bank Dunia dan IMF untuk Indonesia 2026" />
                     <TrendChart
                       title=""
                       series={[

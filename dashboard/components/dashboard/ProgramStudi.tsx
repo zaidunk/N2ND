@@ -39,7 +39,7 @@ export default function ProgramStudi() {
   const toggle = (id: string) => setOpen(prev => prev === id ? null : id)
 
   return (
-    <section className="px-4 py-4">
+    <section className="px-2 sm:px-4 py-2">
       <div className="mx-auto max-w-[1400px]">
         <div className="card p-0 overflow-hidden">
           <div className="flex items-center justify-between px-4 pt-3 pb-3 border-b border-border">
@@ -78,7 +78,7 @@ export default function ProgramStudi() {
                           </div>
                           <div className="flex items-center gap-1 shrink-0 ml-2">
                             <GptButton
-                              subject={`program studi ${prodi.name} prospek karir dan topik menarik`}
+                              subject={`program studi ${prodi.name} di Indonesia. Analisis komprehensif: (1) gambaran umum prodi dan relevansinya di era digital 2025, (2) prospek karir terbaik dan industri yang paling banyak menyerap lulusan, (3) 5 topik skripsi atau riset yang sedang trending dan bernilai tinggi, (4) skill teknis dan soft skill wajib yang dicari rekruter saat ini, (5) estimasi gaji fresh graduate vs 5 tahun pengalaman di Indonesia, (6) kampus dengan program ${prodi.name} terbaik beserta keunggulannya, (7) perbedaan dengan prodi serupa dan kapan harus pilih ${prodi.name}`}
                               label="GPT"
                               className="text-[9px] px-1.5 py-0.5"
                             />
@@ -94,7 +94,7 @@ export default function ProgramStudi() {
                                   className="inline-flex items-center gap-0.5 bg-surface border border-border rounded px-1.5 py-0.5 text-[9px] text-text font-bold leading-tight"
                                 >
                                   {kw}
-                                  <GptButton subject={`${kw} dalam konteks ${prodi.name}`} label="?" className="ml-0.5" />
+                                  <GptButton subject={`topik "${kw}" dalam program studi ${prodi.name}. Jelaskan: (1) apa ini dan mengapa penting di 2025, (2) aplikasi nyata di industri Indonesia, (3) skill spesifik yang perlu dikuasai, (4) peluang karir dan gaji terkait, (5) sumber belajar terbaik dan sertifikasi relevan, (6) contoh perusahaan Indonesia yang aktif butuh keahlian ini`} label="?" className="ml-0.5" />
                                 </span>
                               ))}
                             </div>

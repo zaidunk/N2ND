@@ -36,7 +36,7 @@ export default function NewsSection({ articles }: Props) {
   const filtered = filter === "all" ? articles : articles.filter(a => a.source_id === filter)
 
   return (
-    <section className="px-4 py-4">
+    <section className="px-2 sm:px-4 py-2">
       <div className="mx-auto max-w-[1400px]">
         <div className="card p-0 overflow-hidden">
           <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-border">
@@ -90,7 +90,7 @@ export default function NewsSection({ articles }: Props) {
                     )}
                   </div>
                 </div>
-                <GptButton subject={a.title} className="mt-0.5" />
+                <GptButton subject={`berita: "${a.title}". Tolong jelaskan: (1) apa yang sebenarnya terjadi dan latar belakang lengkapnya, (2) siapa saja pihak yang terlibat dan kepentingan masing-masing, (3) dampak nyata terhadap ekonomi, politik, atau masyarakat Indonesia, (4) perspektif dari berbagai pihak: pemerintah, pengamat, dan publik, (5) apa yang harus diwaspadai atau diantisipasi ke depan`} className="mt-0.5 shrink-0" />
               </div>
             ))}
             {filtered.length === 0 && (

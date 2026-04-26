@@ -44,7 +44,7 @@ export default function TrendsSection({ data }: Props) {
   const [openCat, setOpenCat] = useState<number | null>(null)
 
   return (
-    <section className="px-4 py-4">
+    <section className="px-2 sm:px-4 py-2">
       <div className="mx-auto max-w-[1400px]">
         <div className="card p-0 overflow-hidden">
           <div className="flex items-center justify-between px-4 pt-3 pb-3 border-b border-border">
@@ -71,7 +71,7 @@ export default function TrendsSection({ data }: Props) {
                       {t.traffic && (
                         <span className="text-[9px] text-muted shrink-0">{t.traffic}</span>
                       )}
-                      <GptButton subject={t.title} className="opacity-0 group-hover:opacity-100" />
+                      <GptButton subject={`topik trending Indonesia: "${t.title}". Jelaskan: (1) mengapa ini viral dan apa yang sebenarnya terjadi, (2) konteks sosial, ekonomi, atau politik di baliknya, (3) siapa yang paling terpengaruh dan bagaimana reaksi publik, (4) implikasi jangka panjang terhadap Indonesia, (5) peluang bisnis atau karir yang muncul dari tren ini`} className="opacity-0 group-hover:opacity-100" />
                     </li>
                   ))}
                 </ol>
@@ -100,7 +100,7 @@ export default function TrendsSection({ data }: Props) {
                         {cat.keywords.map((kw, j) => (
                           <span key={j} className="inline-flex items-center gap-1 bg-surface2 border border-border rounded px-2 py-0.5 text-[10px] text-text">
                             {kw}
-                            <GptButton subject={kw} label="?" className="ml-0.5" />
+                            <GptButton subject={`topik "${kw}" yang relevan di Indonesia 2025. Analisis: (1) perkembangan terkini dan siapa yang terdampak, (2) data dan angka kunci terbaru, (3) peluang bisnis atau karir yang terbuka, (4) risiko dan hal yang perlu diwaspadai, (5) perbandingan dengan negara ASEAN dan global, (6) rekomendasi langkah konkret`} label="?" className="ml-0.5" />
                           </span>
                         ))}
                       </div>
