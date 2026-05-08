@@ -4,6 +4,11 @@ addEventListener('fetch', event => {
 
 const HF_EMBED_MODEL = 'sentence-transformers/all-MiniLM-L6-v2'
 const HF_SUMMARY_MODEL = 'facebook/bart-large-cnn'
+const ALLOWED_ORIGINS = new Set([
+  'https://n2nd.pages.dev',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+])
 
 const SAMPLE_SEGMENTS = [
   ['urban-planner', 'Urban Planner', '25-34', 'menengah-atas', 'Jakarta', 'Bandung', 'Surabaya', ['LinkedIn', 'X', 'Instagram'], 0.28, 78, 'up', ['transport', 'housing', 'public policy']],
@@ -13,14 +18,16 @@ const SAMPLE_SEGMENTS = [
   ['campus-signal', 'Campus Signal', '18-24', 'menengah', 'Bandung', 'Yogyakarta', 'Malang', ['TikTok', 'X', 'Instagram'], 0.34, 54, 'up', ['scholarship', 'AI tools', 'career']],
 ]
 
-async function forwardToHF(model, body, token) {
+async function forwardToHF(model, task, body, token) {
+  if (!token) return jsonResponse({ error: 'missing huggingface token' }, 401)
+
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'Authorization': `Bearer ${token}`,
   }
-  if (token) headers.Authorization = `Bearer ${token}`
 
-  const resp = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+  const resp = await fetch(`https://router.huggingface.co/hf-inference/models/${model}/pipeline/${task}`, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
@@ -35,6 +42,7 @@ async function forwardToHF(model, body, token) {
 async function handleRequest(request) {
   const url = new URL(request.url)
   const path = url.pathname.replace(/\/$/, '') || '/'
+  globalThis.__requestOrigin = request.headers.get('origin') || ''
 
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders() })
@@ -44,8 +52,12 @@ async function handleRequest(request) {
     return jsonResponse({
       ok: true,
       huggingface: { tokenConfigured: Boolean(getHfToken(request)), optionalAuth: true },
-      endpoints: ['/segments', '/embed', '/summarize'],
+      endpoints: ['/segments', '/hf-health', '/embed', '/summarize'],
     })
+  }
+
+  if (path === '/hf-health' && request.method === 'GET') {
+    return forwardToHF(HF_EMBED_MODEL, 'feature-extraction', { inputs: ['n2nd attentionboost health check'] }, getHfToken(request))
   }
 
   if (path === '/segments' && (request.method === 'GET' || request.method === 'POST')) {
@@ -64,16 +76,18 @@ async function handleRequest(request) {
   }
 
   if (path === '/embed') {
+    if (!isAuthorizedAppRequest(request)) return jsonResponse({ error: 'unauthorized' }, 401)
     const inputs = body.inputs || body.text || body.texts
     if (!inputs) return jsonResponse({ error: 'missing inputs' }, 400)
-    return forwardToHF(HF_EMBED_MODEL, { inputs }, getHfToken(request))
+    return forwardToHF(HF_EMBED_MODEL, 'feature-extraction', { inputs }, getHfToken(request))
   }
 
   if (path === '/summarize') {
+    if (!isAuthorizedAppRequest(request)) return jsonResponse({ error: 'unauthorized' }, 401)
     const inputs = body.inputs || body.text || body.document
     if (!inputs) return jsonResponse({ error: 'missing inputs' }, 400)
     const params = Object.assign({ max_length: 120, min_length: 24 }, body.params || {})
-    return forwardToHF(HF_SUMMARY_MODEL, { inputs, parameters: params }, getHfToken(request))
+    return forwardToHF(HF_SUMMARY_MODEL, 'summarization', { inputs, parameters: params }, getHfToken(request))
   }
 
   return jsonResponse({ error: 'not found' }, 404)
@@ -88,6 +102,17 @@ function getHfToken(request) {
     globalThis.HUGGINGFACE_API_TOKEN ||
     globalThis.HUGGINGFACE_API_KEY ||
     ''
+}
+
+function isAuthorizedAppRequest(request) {
+  const configuredKey = globalThis.N2ND_WORKER_API_KEY || ''
+  if (!configuredKey) return Boolean(getHfTokenFromHeader(request))
+  return request.headers.get('x-n2nd-worker-key') === configuredKey
+}
+
+function getHfTokenFromHeader(request) {
+  const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
+  return authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : ''
 }
 
 function buildSegmentsPayload() {
@@ -123,10 +148,13 @@ function jsonResponse(payload, status = 200) {
 }
 
 function corsHeaders() {
+  const origin = globalThis.__requestOrigin || ''
+  const allowedOrigin = ALLOWED_ORIGINS.has(origin) ? origin : 'https://n2nd.pages.dev'
   return {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-N2ND-Worker-Key',
     'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff',
   }
 }

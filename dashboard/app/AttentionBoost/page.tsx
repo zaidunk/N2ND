@@ -29,6 +29,7 @@ const asMap = (v: unknown): JsonMap | null => (v && typeof v === "object" && !Ar
 const asString = (v: unknown): string | undefined => typeof v === "string" ? v : undefined
 const asNumber = (v: unknown): number | undefined => (typeof v === "number" && isFinite(v)) ? v : undefined
 const asArray = (v: unknown): unknown[] => Array.isArray(v) ? v : []
+const ATTENTIONBOOST_FALLBACK_URL = "https://n2nd-worker.xolvoncollective.workers.dev/segments"
 
 const pickString = (obj: JsonMap, keys: string[]): string | undefined => {
   for (const key of keys) {
@@ -63,14 +64,13 @@ const formatDate = (value?: string) => {
 }
 
 async function fetchAttentionBoost(): Promise<PayloadView | null> {
-  const endpoint = process.env.ATTENTIONBOOST_API_URL
-  if (!endpoint) return null
+  const endpoint = process.env.ATTENTIONBOOST_API_URL || ATTENTIONBOOST_FALLBACK_URL
 
   const headers: Record<string, string> = { "User-Agent": "n2nd/2.0" }
   const token = process.env.ATTENTIONBOOST_API_KEY
   if (token) headers.Authorization = `Bearer ${token}`
 
-  const r = await fetch(endpoint, { headers, cache: "no-store" })
+  const r = await fetch(endpoint, { headers, next: { revalidate: 900 } })
   if (!r.ok) return null
   const raw = await r.json() as JsonMap
 

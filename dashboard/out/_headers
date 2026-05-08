@@ -4,3 +4,4 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://n2nd-worker.xolvoncollective.workers.dev https://api.frankfurter.app https://api.alternative.me https://api.coinpaprika.com https://www.imf.org https://api.worldbank.org; frame-src https://www.youtube.com; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'
