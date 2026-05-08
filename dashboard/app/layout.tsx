@@ -18,6 +18,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
+      <head>
+        {/* Set theme before React hydrates to prevent flash */}
+        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('n2nd_theme')==='light')document.documentElement.classList.add('light')}catch(e){}` }} />
+      </head>
       <body className="min-h-screen bg-bg font-sans text-text antialiased">
         <Navbar />
         <main>{children}</main>

@@ -11,6 +11,7 @@ import os
 from typing import Optional
 
 from openai import AsyncOpenAI
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -85,8 +86,92 @@ async def embed_articles(articles: list[dict]) -> list[dict]:
         vectors = await embed_batch(texts)
         return [{**a, "embedding": v} for a, v in zip(articles, vectors)]
     except Exception as exc:
-        logger.error("embed_articles failed: %s", exc)
-        return articles  # return without embeddings; DB upsert will skip vector
+        logger.warning("OpenAI embed_articles failed: %s. Trying Hugging Face Inference API or local fallbacks.", exc)
+
+        # 1) Try Hugging Face Inference API if token provided
+        hf_token = os.environ.get("HUGGINGFACE_API_TOKEN") or os.environ.get("HF_API_TOKEN")
+        if hf_token:
+            try:
+                import httpx
+
+                url = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
+                headers = {"Authorization": f"Bearer {hf_token}", "Accept": "application/json"}
+                async with httpx.AsyncClient(timeout=60.0) as client:
+                    resp = await client.post(url, headers=headers, json={"inputs": texts})
+                    resp.raise_for_status()
+                    vectors = resp.json()
+                    # API may return list of lists or nested dicts
+                    vecs = []
+                    for item in vectors:
+                        if isinstance(item, dict) and "embedding" in item:
+                            vecs.append(item["embedding"])
+                        elif isinstance(item, list):
+                            vecs.append(item)
+                        else:
+                            # unknown format
+                            raise ValueError("Unexpected HF embeddings response format")
+                    return [{**a, "embedding": v} for a, v in zip(articles, vecs)]
+            except Exception as exc_hf:
+                logger.warning("Hugging Face embedding API failed: %s", exc_hf)
+
+        # 2) Try local sentence-transformers
+        try:
+            from sentence_transformers import SentenceTransformer
+
+            model = SentenceTransformer("all-MiniLM-L6-v2")
+
+            def _encode(texts_list):
+                return model.encode(texts_list, show_progress_bar=False, convert_to_numpy=True)
+
+            vectors = await asyncio.to_thread(_encode, texts)
+
+            # vectors may be a numpy array or an iterable of arrays
+            try:
+                import numpy as _np
+
+                if isinstance(vectors, _np.ndarray):
+                    vecs = vectors.tolist()
+                else:
+                    vecs = [v.tolist() if hasattr(v, "tolist") else list(v) for v in vectors]
+            except Exception:
+                vecs = [v.tolist() if hasattr(v, "tolist") else list(v) for v in vectors]
+
+            return [{**a, "embedding": v} for a, v in zip(articles, vecs)]
+        except Exception as exc2:
+            logger.warning("Local sentence-transformers unavailable or failed: %s. Trying TF-IDF fallback.", exc2)
+
+        # 3) TF-IDF fallback
+        try:
+            from sklearn.feature_extraction.text import TfidfVectorizer
+
+            def compute_tfidf(texts):
+                vec = TfidfVectorizer(max_features=512)
+                m = vec.fit_transform(texts)
+                arr = m.toarray()
+                return [a.tolist() for a in arr]
+
+            vecs = await asyncio.to_thread(compute_tfidf, texts)
+            return [{**a, "embedding": v} for a, v in zip(articles, vecs)]
+        except Exception as exc3:
+            logger.warning("TF-IDF fallback failed: %s. Using deterministic hashing fallback.", exc3)
+
+        # 4) Deterministic hashing fallback
+        try:
+            import hashlib
+
+            def hash_embed(s: str, dims: int = 128):
+                v = []
+                for i in range(dims):
+                    h = hashlib.sha256((s + str(i)).encode()).hexdigest()
+                    val = int(h[:8], 16)
+                    v.append((val % 10000) / 10000.0)
+                return v
+
+            vecs = [hash_embed(t) for t in texts]
+            return [{**a, "embedding": v} for a, v in zip(articles, vecs)]
+        except Exception as exc4:
+            logger.error("Deterministic hashing fallback failed: %s", exc4)
+            return articles  # return without embeddings; DB upsert will skip vector
 
 
 async def embed_query(query: str) -> list[float]:

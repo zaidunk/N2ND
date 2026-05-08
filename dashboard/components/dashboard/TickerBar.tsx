@@ -20,13 +20,13 @@ function buildItems(data: FinanceData): TickerItem[] {
 
 export default function TickerBar({ data }: Props) {
   const items = buildItems(data)
-  const doubled = [...items, ...items]
+  const quad = [...items, ...items, ...items, ...items]
 
   return (
     <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-border overflow-hidden">
-      <div className="flex animate-ticker whitespace-nowrap py-0.5">
-        {doubled.map((item, i) => (
-          <span key={i} className="inline-flex items-center gap-2 px-5 py-1 text-[11px] border-r border-border/40 shrink-0">
+      <div className="flex animate-ticker whitespace-nowrap py-0.5" style={{ willChange: "transform" }}>
+        {quad.map((item, i) => (
+          <span key={i} className="inline-flex items-center gap-2 px-3 sm:px-5 py-1 text-[11px] border-r border-border/40 shrink-0">
             <span className="text-muted font-bold tracking-wide">{item.label}</span>
             <span className="text-text font-extrabold">{item.value}</span>
             {item.change != null && (

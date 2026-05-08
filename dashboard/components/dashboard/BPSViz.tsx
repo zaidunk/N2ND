@@ -86,88 +86,77 @@ export default function BPSViz() {
             )}
 
             {tab === "Ekonomi" && (
-              <div className="space-y-6">
-                <div>
-                  <SectionTitle title="Inflasi per Kategori 2025 (%)" subject="inflasi kategori barang dan jasa Indonesia 2025" />
-                  <div className="overflow-y-auto max-h-[400px] pr-1">
-                    <SvgBarChart
-                      data={INF_BY_CATEGORY.map(d => ({ label: d.label, value: d.v2025 }))}
-                      colorFn={v => v < 0 ? "#F85149" : v < 2 ? "#3B82F6" : v < 5 ? "#F59E0B" : "#EF4444"}
-                      unit="%" decimals={2} barHeight={18}
-                    />
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div>
+                    <SectionTitle title="Inflasi per Kategori 2025 (%)" subject="inflasi kategori barang dan jasa Indonesia 2025" />
+                    <div className="overflow-y-auto max-h-[320px]">
+                      <SvgBarChart data={INF_BY_CATEGORY.map(d => ({ label: d.label, value: d.v2025 }))}
+                        colorFn={v => v < 0 ? "#F85149" : v < 2 ? "#3B82F6" : v < 5 ? "#F59E0B" : "#EF4444"}
+                        unit="%" decimals={2} barHeight={18} />
+                    </div>
+                  </div>
+                  <div>
+                    <SectionTitle title="Inflasi per Kategori 2024 (%)" subject="inflasi kategori barang dan jasa Indonesia 2024" />
+                    <div className="overflow-y-auto max-h-[320px]">
+                      <SvgBarChart data={INF_BY_CATEGORY.map(d => ({ label: d.label, value: d.v2024 }))}
+                        colorFn={v => v < 0 ? "#F85149" : v < 2 ? "#3B82F6" : "#F59E0B"}
+                        unit="%" decimals={2} barHeight={18} />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <SectionTitle title="Inflasi per Kategori 2024 (%)" subject="inflasi kategori barang dan jasa Indonesia 2024" />
-                  <div className="overflow-y-auto max-h-[400px] pr-1">
-                    <SvgBarChart
-                      data={INF_BY_CATEGORY.map(d => ({ label: d.label, value: d.v2024 }))}
-                      colorFn={v => v < 0 ? "#F85149" : v < 2 ? "#3B82F6" : "#F59E0B"}
-                      unit="%" decimals={2} barHeight={18}
-                    />
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div>
+                    <SectionTitle title="FDI Masuk per Negara (Juta USD)" subject="investasi asing langsung FDI Indonesia per negara asal" />
+                    <SvgBarChart data={FDI_BY_COUNTRY} colorFn={() => "#3B82F6"} unit="" decimals={0} barHeight={22} />
                   </div>
-                </div>
-                <div>
-                  <SectionTitle title="FDI Masuk per Negara (Juta USD)" subject="investasi asing langsung FDI Indonesia per negara asal" />
-                  <SvgBarChart
-                    data={FDI_BY_COUNTRY}
-                    colorFn={() => "#3B82F6"}
-                    unit="" decimals={0} barHeight={20}
-                  />
-                </div>
-                <div>
-                  <SectionTitle title="Kontribusi Sektor ke PDB (%)" subject="kontribusi sektor ekonomi terhadap PDB Indonesia" />
-                  <div className="overflow-y-auto max-h-[400px]">
-                    <SvgBarChart
-                      data={GDP_BY_SECTOR}
-                      colorFn={v => v >= 10 ? "#10B981" : v >= 5 ? "#3B82F6" : "#6B7BB6"}
-                      unit="%" decimals={2} barHeight={18}
-                    />
+                  <div>
+                    <SectionTitle title="Kontribusi Sektor ke PDB (%)" subject="kontribusi sektor ekonomi terhadap PDB Indonesia" />
+                    <div className="overflow-y-auto max-h-[320px]">
+                      <SvgBarChart data={GDP_BY_SECTOR}
+                        colorFn={v => v >= 10 ? "#10B981" : v >= 5 ? "#3B82F6" : "#6B7BB6"}
+                        unit="%" decimals={2} barHeight={18} />
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
             {tab === "Ketenagakerjaan" && (
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <div>
                   <SectionTitle title="UMP 2025 per Provinsi (Juta Rp)" subject="upah minimum provinsi UMP 2025 Indonesia" />
-                  <div className="overflow-y-auto max-h-[560px] pr-1">
-                    <SvgBarChart
-                      data={UMP_BY_PROVINCE}
+                  <div className="overflow-y-auto max-h-[600px]">
+                    <SvgBarChart data={UMP_BY_PROVINCE}
                       colorFn={v => v >= 4 ? "#10B981" : v >= 3 ? "#3B82F6" : "#6B7BB6"}
-                      unit="Jt" decimals={2} barHeight={16}
-                    />
+                      unit="Jt" decimals={2} barHeight={16} />
                   </div>
                 </div>
                 <div>
-                  <SectionTitle title="Tingkat Pengangguran Terbuka per Provinsi (%)" subject="tingkat pengangguran terbuka TPT per provinsi Indonesia" />
-                  <div className="overflow-y-auto max-h-[560px] pr-1">
-                    <SvgBarChart
-                      data={TPT_BY_PROVINCE}
+                  <SectionTitle title="TPT per Provinsi (%)" subject="tingkat pengangguran terbuka TPT per provinsi Indonesia" />
+                  <div className="overflow-y-auto max-h-[600px]">
+                    <SvgBarChart data={TPT_BY_PROVINCE}
                       colorFn={v => v >= 6 ? "#F85149" : v >= 4 ? "#F59E0B" : "#10B981"}
-                      unit="%" decimals={2} barHeight={16}
-                    />
+                      unit="%" decimals={2} barHeight={16} />
                   </div>
                 </div>
               </div>
             )}
 
             {tab === "Sosial" && (
-              <div className="space-y-6">
-                <div>
-                  <SectionTitle title="Indeks Kebahagiaan per Provinsi" subject="indeks kebahagiaan BPS Indonesia per provinsi" />
-                  <div className="overflow-y-auto max-h-[480px] pr-1">
-                    <SvgBarChart
-                      data={HAPPINESS_BY_PROVINCE}
-                      colorFn={v => v >= 75 ? "#10B981" : v >= 72 ? "#3B82F6" : "#F59E0B"}
-                      unit="" decimals={2} barHeight={18}
-                    />
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div>
+                    <SectionTitle title="Indeks Kebahagiaan per Provinsi" subject="indeks kebahagiaan BPS Indonesia per provinsi" />
+                    <div className="overflow-y-auto max-h-[480px]">
+                      <SvgBarChart data={HAPPINESS_BY_PROVINCE}
+                        colorFn={v => v >= 75 ? "#10B981" : v >= 72 ? "#3B82F6" : "#F59E0B"}
+                        unit="" decimals={2} barHeight={18} />
+                    </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-surface2 rounded-lg p-4">
-                    <div className="text-[10px] font-extrabold text-muted mb-3 uppercase tracking-widest">Indikator Sosial Kunci</div>
+                  <div className="space-y-3">
+                  <div className="bg-surface2 rounded-lg p-3">
+                    <div className="text-[10px] font-extrabold text-muted mb-2 uppercase tracking-widest">Indikator Sosial Kunci</div>
                     {[
                       { label: "Angka Harapan Hidup",   value: "73,7 tahun", note: "+0.3 vs 2023" },
                       { label: "Rata-rata Lama Sekolah", value: "9,05 tahun", note: "Target 9+ thn" },
@@ -185,8 +174,8 @@ export default function BPSViz() {
                       </div>
                     ))}
                   </div>
-                  <div className="bg-surface2 rounded-lg p-4">
-                    <div className="text-[10px] font-extrabold text-muted mb-3 uppercase tracking-widest">Indikator Gender & Sosial</div>
+                  <div className="bg-surface2 rounded-lg p-3">
+                    <div className="text-[10px] font-extrabold text-muted mb-2 uppercase tracking-widest">Indikator Gender & Sosial</div>
                     {[
                       { label: "Indeks Pemberdayaan Gender", value: "76,36",    note: "IDG 2024" },
                       { label: "Partisipasi Perempuan Kerja", value: "54,52%",  note: "TPAK" },
@@ -204,23 +193,22 @@ export default function BPSViz() {
                       </div>
                     ))}
                   </div>
+                  </div>
                 </div>
               </div>
             )}
 
             {tab === "Digital" && (
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <div>
                   <SectionTitle title="Akses Internet per Provinsi (%)" subject="penetrasi internet per provinsi Indonesia" />
-                  <div className="overflow-y-auto max-h-[620px] pr-1">
-                    <SvgBarChart
-                      data={INTERNET_BY_PROVINCE}
+                  <div className="overflow-y-auto max-h-[620px]">
+                    <SvgBarChart data={INTERNET_BY_PROVINCE}
                       colorFn={v => v >= 90 ? "#10B981" : v >= 75 ? "#3B82F6" : v >= 50 ? "#F59E0B" : "#F85149"}
-                      unit="%" decimals={2} barHeight={16}
-                    />
+                      unit="%" decimals={2} barHeight={16} />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
                   <div className="bg-surface2 rounded-lg p-4">
                     <div className="text-[10px] font-extrabold text-muted mb-3 uppercase tracking-widest">Ekosistem Digital Indonesia</div>
                     {[
@@ -242,8 +230,8 @@ export default function BPSViz() {
                       </div>
                     ))}
                   </div>
-                  <div className="bg-surface2 rounded-lg p-4">
-                    <div className="text-[10px] font-extrabold text-muted mb-3 uppercase tracking-widest">Regulasi & Infrastruktur Digital</div>
+                  <div className="bg-surface2 rounded-lg p-3">
+                    <div className="text-[10px] font-extrabold text-muted mb-2 uppercase tracking-widest">Regulasi & Infrastruktur Digital</div>
                     {[
                       { label: "Pusat Data Nasional",      value: "Online",    note: "PDNS aktif" },
                       { label: "Regulasi UU PDP",          value: "Berlaku",   note: "2024" },

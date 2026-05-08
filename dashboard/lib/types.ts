@@ -27,6 +27,7 @@ export interface CoinData {
   priceUsd: number
   priceIdr: number
   change24h: number
+  history?: number[]
 }
 
 export interface ForexPair {
@@ -34,6 +35,7 @@ export interface ForexPair {
   from: string
   to: string
   rate: number
+  history?: number[]
 }
 
 export interface StockData {
@@ -42,6 +44,7 @@ export interface StockData {
   price: number
   change: number
   type: "index" | "commodity"
+  history?: number[]
 }
 
 export interface FinanceData {
@@ -67,6 +70,28 @@ export interface FinanceData {
 // Trends
 export interface TrendItem { title: string; traffic?: string }
 export interface TrendsData { trending: TrendItem[]; fetchedAt: string }
+
+// YouTube Live Streams
+export interface StreamItem {
+  label: string
+  handle: string
+  channelId: string
+  videoId?: string
+  url: string
+  category: "news" | "realtime"
+}
+
+// World Bank / IMF
+export interface WorldBankPoint { year: number; value: number; isProjection?: boolean }
+export interface WorldBankSeries {
+  id: string
+  label: string
+  unit: string
+  source: string
+  points: WorldBankPoint[]
+  latest?: number
+  change?: number
+}
 
 // Prodi
 export interface ProdiEntry {

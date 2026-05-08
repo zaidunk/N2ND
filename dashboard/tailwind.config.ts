@@ -9,17 +9,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg:        "#07080F",
-        surface:   "#0D1117",
-        surface2:  "#161B27",
-        border:    "#1E2D3D",
-        primary:   "#3B82F6",
-        "primary-hover": "#2563EB",
-        accent:    "#F59E0B",
-        text:      "#EEF2FF",
-        muted:     "#6B7BB6",
-        positive:  "#10B981",
-        negative:  "#F85149",
+        bg:       "rgb(var(--color-bg) / <alpha-value>)",
+        surface:  "rgb(var(--color-surface) / <alpha-value>)",
+        surface2: "rgb(var(--color-surface2) / <alpha-value>)",
+        border:   "rgb(var(--color-border) / <alpha-value>)",
+        primary:  "rgb(var(--color-primary) / <alpha-value>)",
+        "primary-hover": "rgb(var(--color-primary) / 0.8)",
+        accent:   "rgb(var(--color-accent) / <alpha-value>)",
+        text:     "rgb(var(--color-text) / <alpha-value>)",
+        muted:    "rgb(var(--color-muted) / <alpha-value>)",
+        positive: "#10B981",
+        negative: "#F85149",
       },
       fontFamily: {
         sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
@@ -33,13 +33,13 @@ const config: Config = {
         "glow-blue": "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59,130,246,0.15), transparent)",
       },
       animation: {
-        "ticker": "ticker 30s linear infinite",
+        "ticker": "ticker 40s linear infinite",
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
       keyframes: {
         ticker: {
           "0%":   { transform: "translateX(0)" },
-          "100%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(-25%)" },
         },
       },
     },

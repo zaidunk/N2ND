@@ -61,7 +61,7 @@ export default function TrendChart({ title, series, width = 460, height = 180 }:
           const x = (idx / (years.length - 1)) * width
           return (
             <text key={y} x={x} y={height - 4} textAnchor="middle"
-              fontSize={8} fill="#6B7BB6" fontWeight={700}>{y}</text>
+              fontSize={8} fill="rgb(107 123 182)" fontWeight={700}>{y}</text>
           )
         })}
       </svg>

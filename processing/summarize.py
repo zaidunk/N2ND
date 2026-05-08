@@ -50,7 +50,34 @@ async def _summarize_one(text: str, lang: str = "id") -> str:
         return resp.choices[0].message.content.strip()
     except Exception as exc:
         logger.debug("summarize_one failed: %s", exc)
-        return ""
+        # 1) Try Hugging Face summarization API if token present
+        hf_token = os.environ.get("HUGGINGFACE_API_TOKEN") or os.environ.get("HF_API_TOKEN")
+        if hf_token:
+            try:
+                import httpx
+
+                hf_model = "sshleifer/distilbart-cnn-12-6"
+                url = f"https://api-inference.huggingface.co/models/{hf_model}"
+                headers = {"Authorization": f"Bearer {hf_token}", "Accept": "application/json"}
+                payload = {"inputs": text[:_MAX_BODY_CHARS], "parameters": {"max_length": 120, "min_length": 30}}
+                async with httpx.AsyncClient(timeout=60.0) as client:
+                    resp = await client.post(url, headers=headers, json=payload)
+                    resp.raise_for_status()
+                    out = resp.json()
+                    if isinstance(out, list) and out:
+                        return out[0].get("summary_text", out[0].get("generated_text", "")).strip()
+            except Exception as exc_hf:
+                logger.debug("Hugging Face summarization failed: %s", exc_hf)
+
+        # Fallback: simple extractive 2-sentence summary
+        try:
+            s = text.replace("\n", " ").strip()
+            parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", s) if p.strip()]
+            if not parts:
+                return s[:200]
+            return " ".join(parts[:2])
+        except Exception:
+            return (text[:200] + "...") if text else ""
 
 
 async def summarize_batch(articles: list[dict]) -> list[dict]:

@@ -37,7 +37,6 @@ export async function GET() {
     safeJson("https://api.alternative.me/fng/?limit=1"),
   ])
 
-  // Crypto
   if (coinRes.status === "fulfilled") {
     const raw = coinRes.value as Record<string, { usd?: number; idr?: number; usd_24h_change?: number }>
     const MAP: [string, string, string][] = [
@@ -59,7 +58,6 @@ export async function GET() {
     data.ethUsd = raw.ethereum?.usd
   }
 
-  // Forex
   if (fxRes.status === "fulfilled") {
     const rates = (fxRes.value as { rates?: Record<string, number> }).rates ?? {}
     const idr = rates["IDR"]; const eur = rates["EUR"]; const cny = rates["CNY"]
@@ -73,7 +71,6 @@ export async function GET() {
     ].filter(p => p.rate > 0)
   }
 
-  // Stocks & commodities
   const mkStock = (name: string, ticker: string, type: "index" | "commodity", res: { price: number; prev: number } | null): StockData | null => {
     if (!res) return null
     return { name, ticker, type, price: res.price, change: ((res.price - res.prev) / res.prev) * 100 }
@@ -93,7 +90,6 @@ export async function GET() {
   if (sp500) { data.sp500 = sp500.price; data.sp500Change = sp500.change }
   if (gold) { data.goldUsd = gold.price; data.goldChange = gold.change }
 
-  // Fear & Greed
   if (fgRes.status === "fulfilled") {
     const fg = (fgRes.value as { data?: Array<{ value?: string; value_classification?: string }> }).data?.[0] ?? {}
     data.fearGreed = fg.value ? parseInt(fg.value) : undefined

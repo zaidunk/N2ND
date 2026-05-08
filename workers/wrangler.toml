@@ -1,0 +1,8 @@
+name = "n2nd-worker"
+main = "worker.js"
+compatibility_date = "2026-05-08"
+account_id = "1bf621dc7f7708c47ea82cb36d6bb8f6"
+
+[vars]
+# Optionally set here for local dev; prefer wrangler secret for production
+# HF_TOKEN = ""
