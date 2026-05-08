@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 import { useState, useEffect, useRef, useCallback } from "react"
 
 interface StreamChannel {
@@ -28,30 +29,11 @@ const CHANNELS: StreamChannel[] = [
   { label: "Federal Reserve", handle: "federalreserve", channelId: "UCLd6g5Uu0oPYnq4PBtVJkqQ" },
 ]
 
-type StreamState = { videoId: string | null; isLive: boolean } | "loading"
-
 function StreamCard({ pool, initialIdx }: { pool: StreamChannel[]; initialIdx: number }) {
   const [idx, setIdx]       = useState(initialIdx)
-  const [state, setState]   = useState<StreamState>("loading")
   const iframeRef           = useRef<HTMLIFrameElement>(null)
 
   const ch = pool[idx % pool.length]
-
-  useEffect(() => {
-    if (!ch) return
-    setState("loading")
-    const ctrl = new AbortController()
-    fetch(
-      `/api/stream?handle=${encodeURIComponent(ch.handle)}&channelId=${encodeURIComponent(ch.channelId)}`,
-      { signal: ctrl.signal }
-    )
-      .then(r => r.json())
-      .then((d: { videoId?: string | null; isLive?: boolean }) =>
-        setState({ videoId: d.videoId ?? null, isLive: d.isLive ?? false })
-      )
-      .catch(err => { if (err.name !== "AbortError") setState({ videoId: null, isLive: false }) })
-    return () => ctrl.abort()
-  }, [ch?.handle, ch?.channelId])
 
   const cycle = useCallback(() => {
     setIdx(i => (i + 8) % pool.length)
@@ -84,16 +66,15 @@ function StreamCard({ pool, initialIdx }: { pool: StreamChannel[]; initialIdx: n
   if (!ch) return null
 
   const liveUrl = `https://www.youtube.com/@${ch.handle}/live`
+  const embedUrl = `https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(ch.channelId)}&autoplay=1&mute=1&rel=0&modestbranding=1&enablejsapi=1`
 
   return (
     <div className="card overflow-hidden">
       <div className="flex items-center justify-between px-2.5 py-1 border-b border-border">
         <div className="flex items-center gap-1.5 text-[9px] font-extrabold text-muted">
-          <span className={`w-1.5 h-1.5 rounded-full ${state !== "loading" && state.isLive ? "bg-red-500 animate-pulse-slow" : "bg-muted/50"}`} />
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse-slow" />
           <span className="truncate max-w-[100px]" title={ch.label}>{ch.label}</span>
-          {state !== "loading" && !state.isLive && state.videoId && (
-            <span className="text-[8px] text-muted/50 font-normal">(terbaru)</span>
-          )}
+          <span className="text-[8px] text-muted/50 font-normal">(live)</span>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={cycle} title="Ganti channel" className="text-muted hover:text-primary transition-colors">
@@ -108,32 +89,17 @@ function StreamCard({ pool, initialIdx }: { pool: StreamChannel[]; initialIdx: n
       </div>
 
       <div className="aspect-video bg-surface2 relative">
-        {state === "loading" && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-5 h-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-          </div>
-        )}
-        {state !== "loading" && state.videoId && (
-          <iframe
-            ref={iframeRef}
-            key={state.videoId}
-            src={`https://www.youtube.com/embed/${state.videoId}?autoplay=1&mute=1&rel=0&modestbranding=1&enablejsapi=1`}
-            className="w-full h-full"
-            loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            onLoad={handleIframeLoad}
-            title={`${ch.label} ${state.isLive ? "Live" : "Video Terbaru"}`}
-          />
-        )}
-        {state !== "loading" && !state.videoId && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <span className="text-[10px] text-muted">Tidak ada stream</span>
-            <button onClick={cycle} className="text-[9px] text-primary font-bold hover:underline">
-              Coba channel lain ↻
-            </button>
-          </div>
-        )}
+        <iframe
+          ref={iframeRef}
+          key={ch.channelId}
+          src={embedUrl}
+          className="w-full h-full"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          onLoad={handleIframeLoad}
+          title={`${ch.label} Live`}
+        />
       </div>
     </div>
   )
@@ -151,6 +117,14 @@ export default function Hero() {
           <p className="text-[10px] text-muted mt-1.5 tracking-widest uppercase">
             Intelligence Dashboard · Global & ID News Real-Time
           </p>
+          <div className="mt-3 flex justify-center gap-2">
+            <Link href="/insights" className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-[10px] font-extrabold text-primary hover:bg-primary/15 transition-colors">
+              N2ND Intelligence
+            </Link>
+            <Link href="/AttentionBoost" className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-[10px] font-extrabold text-amber-400 hover:bg-amber-500/15 transition-colors">
+              AttentionBoost
+            </Link>
+          </div>
         </div>
 
         <div>

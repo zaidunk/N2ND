@@ -6,6 +6,7 @@ import GptButton from "@/components/ui/GptButton"
 type G = Window & { __n2nd_articles?: Article[] }
 
 interface Props { articles: Article[] }
+const LIVE_NEWS_URL = "https://n2nd-worker.xolvoncollective.workers.dev/news"
 
 const SOURCE_LABELS: Record<string, string> = {
   antara: "Antara", tempo: "Tempo", detik: "Detik",
@@ -74,6 +75,7 @@ const CAT_COLORS: Record<string, string> = {
 }
 
 export default function NewsSection({ articles }: Props) {
+  const [liveArticles, setLiveArticles] = useState<Article[]>(articles)
   const [catFilter, setCatFilter] = useState("Semua")
   const [srcFilter, setSrcFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState<DateOpt>("Semua")
@@ -81,15 +83,26 @@ export default function NewsSection({ articles }: Props) {
   const [textQ, setTextQ] = useState("")
 
   useEffect(() => {
-    ;(window as G).__n2nd_articles = articles
+    ;(window as G).__n2nd_articles = liveArticles
     const handler = (e: Event) => setTextQ((e as CustomEvent<{ q: string }>).detail.q)
     window.addEventListener("n2nd-search", handler)
     return () => window.removeEventListener("n2nd-search", handler)
-  }, [articles])
+  }, [liveArticles])
+
+  useEffect(() => {
+    let cancelled = false
+    fetch(LIVE_NEWS_URL, { headers: { "Accept": "application/json" } })
+      .then(r => r.ok ? r.json() : null)
+      .then((payload: { articles?: Article[] } | null) => {
+        if (!cancelled && payload?.articles?.length) setLiveArticles(payload.articles)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   const classified = useMemo(
-    () => articles.map(a => ({ ...a, category: classifyArticle(a) })),
-    [articles]
+    () => liveArticles.map(a => ({ ...a, category: classifyArticle(a) })),
+    [liveArticles]
   )
 
   const displayed = useMemo(() => {
@@ -112,7 +125,7 @@ export default function NewsSection({ articles }: Props) {
       })
   }, [classified, catFilter, srcFilter, dateFilter, sortAsc, textQ])
 
-  const sources = useMemo(() => Array.from(new Set(articles.map(a => a.source_id))), [articles])
+  const sources = useMemo(() => Array.from(new Set(liveArticles.map(a => a.source_id))), [liveArticles])
 
   return (
     <section id="news-section" className="px-2 sm:px-4 py-2">
@@ -123,7 +136,7 @@ export default function NewsSection({ articles }: Props) {
           <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-border">
             <h2 className="section-title">Berita Terkini</h2>
             <div className="flex items-center gap-2">
-              <span className="text-[9px] text-muted">{displayed.length} artikel · 30 sumber</span>
+              <span className="text-[9px] text-muted">{displayed.length} artikel · {sources.length} sumber</span>
               <button
                 onClick={() => setSortAsc(v => !v)}
                 className="text-[9px] font-bold text-muted hover:text-primary border border-border px-1.5 py-0.5 rounded transition-colors whitespace-nowrap"

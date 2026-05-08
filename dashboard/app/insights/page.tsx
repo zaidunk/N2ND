@@ -188,7 +188,7 @@ async function fetchFinance(): Promise<FinanceData> {
 
 function extractRSS(xml: string, sourceId: string, lang: string, atom = false): Article[] {
   const tag = atom ? "entry" : "item"
-  const items = xml.match(new RegExp(`<${tag}[^>]*>[\s\S]*?<\/${tag}>`, "g")) ?? []
+  const items = xml.match(new RegExp(`<${tag}[^>]*>[\\s\\S]*?<\\/${tag}>`, "g")) ?? []
   return items.slice(0, 6).map((item): Article => {
     const title = (item.match(/<title><!\[CDATA\[(.+?)\]\]><\/title>/) ??
                    item.match(/<title>([^<]+)<\/title>/))?.[1]?.trim() ?? ""

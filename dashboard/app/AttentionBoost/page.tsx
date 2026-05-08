@@ -1,6 +1,7 @@
-import Link from "next/link"
+"use client"
 
-export const revalidate = 900
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
 
 type JsonMap = Record<string, unknown>
 
@@ -15,13 +16,16 @@ type SegmentView = {
   toneScore?: number
   toneLabel?: string
   buyingPower?: number
+  attentionIndex?: number
   trend?: { direction?: string; horizonDays?: number; confidence?: number; score?: number }
   drivers?: string[]
+  evidence?: Array<{ title?: string; source?: string; link?: string; sentiment?: number; relevance?: number }>
 }
 
 type PayloadView = {
   generatedAt?: string
   window?: { start?: string; end?: string; newsCount?: number }
+  nlp?: { avgTone?: number; topTopics?: Array<{ topic: string; score: number }>; negativePressure?: number; positivePressure?: number }
   segments: SegmentView[]
 }
 
@@ -64,13 +68,11 @@ const formatDate = (value?: string) => {
 }
 
 async function fetchAttentionBoost(): Promise<PayloadView | null> {
-  const endpoint = process.env.ATTENTIONBOOST_API_URL || ATTENTIONBOOST_FALLBACK_URL
+  const endpoint = process.env.NEXT_PUBLIC_ATTENTIONBOOST_API_URL || ATTENTIONBOOST_FALLBACK_URL
 
-  const headers: Record<string, string> = { "User-Agent": "n2nd/2.0" }
-  const token = process.env.ATTENTIONBOOST_API_KEY
-  if (token) headers.Authorization = `Bearer ${token}`
+  const headers: Record<string, string> = { "Accept": "application/json" }
 
-  const r = await fetch(endpoint, { headers, next: { revalidate: 900 } })
+  const r = await fetch(endpoint, { headers, cache: "no-store" })
   if (!r.ok) return null
   const raw = await r.json() as JsonMap
 
@@ -133,14 +135,31 @@ async function fetchAttentionBoost(): Promise<PayloadView | null> {
       toneScore,
       toneLabel,
       buyingPower: pickNumber(seg, ["buying_power", "buyingPower", "power_index", "buying_power_index"]),
+      attentionIndex: pickNumber(seg, ["attention_index", "attentionIndex"]),
       trend,
       drivers: asArray(seg.drivers ?? seg.signals).map((v) => asString(v)).filter((v): v is string => !!v),
+      evidence: asArray(seg.evidence).map((v) => asMap(v)).filter((v): v is JsonMap => v != null).map((item) => ({
+        title: asString(item.title),
+        source: asString(item.source),
+        link: asString(item.link),
+        sentiment: asNumber(item.sentiment),
+        relevance: asNumber(item.relevance),
+      })),
     }
   })
 
   return {
     generatedAt: asString(root.generated_at ?? root.generatedAt ?? root.updated_at),
     window,
+    nlp: asMap(root.nlp) ? {
+      avgTone: asNumber((root.nlp as JsonMap).avgTone),
+      topTopics: asArray((root.nlp as JsonMap).topTopics).map((v) => asMap(v)).filter((v): v is JsonMap => v != null).map((topic) => ({
+        topic: asString(topic.topic) ?? "",
+        score: asNumber(topic.score) ?? 0,
+      })).filter(topic => topic.topic),
+      negativePressure: asNumber((root.nlp as JsonMap).negativePressure),
+      positivePressure: asNumber((root.nlp as JsonMap).positivePressure),
+    } : undefined,
     segments,
   }
 }
@@ -163,8 +182,19 @@ const trendLabel = (trend?: SegmentView["trend"]) => {
   return dir
 }
 
-export default async function AttentionBoostPage() {
-  const payload = await fetchAttentionBoost()
+export default function AttentionBoostPage() {
+  const [payload, setPayload] = useState<PayloadView | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchAttentionBoost()
+      .then(data => { if (!cancelled) setPayload(data) })
+      .catch(() => { if (!cancelled) setPayload(null) })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [])
+
   const segments = payload?.segments ?? []
 
   const windowStart = formatDate(payload?.window?.start)
@@ -180,7 +210,7 @@ export default async function AttentionBoostPage() {
   const countMid = segments.filter(s => s.economyClass === "menengah").length
   const countUpper = segments.filter(s => s.economyClass === "menengah-atas").length
 
-  const trendTop = segments
+  const trendTop = useMemo(() => segments
     .filter(s => s.trend && s.trend.direction && (s.trend.score != null || s.trend.confidence != null))
     .map(s => ({
       id: s.id,
@@ -189,7 +219,7 @@ export default async function AttentionBoostPage() {
       score: s.trend?.score ?? s.trend?.confidence ?? null,
     }))
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-    .slice(0, 5)
+    .slice(0, 5), [segments])
 
   return (
     <div className="min-h-screen pb-12">
@@ -224,7 +254,7 @@ export default async function AttentionBoostPage() {
             </div>
             <div className="card p-3">
               <p className="text-[10px] uppercase tracking-[0.2em] text-muted">Segments</p>
-              <p className="mt-1 text-[12px] text-text">{segments.length} active</p>
+              <p className="mt-1 text-[12px] text-text">{loading ? "Loading" : `${segments.length} active`}</p>
               {(countMid > 0 || countUpper > 0) && (
                 <p className="text-[10px] text-muted mt-1">Menengah: {countMid} | Menengah-atas: {countUpper}</p>
               )}
@@ -256,14 +286,31 @@ export default async function AttentionBoostPage() {
               </div>
             </div>
           )}
+
+          {payload?.nlp?.topTopics && payload.nlp.topTopics.length > 0 && (
+            <div className="mt-4 card p-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted">N2ND news NLP drivers</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {payload.nlp.topTopics.map(topic => (
+                  <span key={topic.topic} className="badge badge-green">{topic.topic}: {topic.score.toFixed(1)}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
       <section className="mx-auto max-w-[1200px] px-4 py-8">
-        {!payload && (
+        {!payload && !loading && (
           <div className="card p-6 text-center">
             <p className="text-[12px] text-text">AttentionBoost data unavailable.</p>
             <p className="text-[10px] text-muted mt-1">Set ATTENTIONBOOST_API_URL and optional ATTENTIONBOOST_API_KEY.</p>
+          </div>
+        )}
+
+        {loading && (
+          <div className="card p-6 text-center">
+            <p className="text-[12px] text-text">Loading AttentionBoost NLP matrix...</p>
           </div>
         )}
 
@@ -341,6 +388,21 @@ export default async function AttentionBoostPage() {
                     </div>
                   )}
 
+                  {seg.attentionIndex != null && (
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between text-[10px] text-muted">
+                        <span>Attention index</span>
+                        <span>{seg.attentionIndex.toFixed(1)}</span>
+                      </div>
+                      <div className="mt-1 h-1.5 w-full rounded-full bg-surface2">
+                        <div
+                          className="h-1.5 rounded-full bg-amber-400"
+                          style={{ width: `${clamp(seg.attentionIndex)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {seg.trend?.direction && (
                     <div className="mt-3 text-[10px] text-muted">
                       Trend: {trendLabel(seg.trend)}
@@ -352,6 +414,23 @@ export default async function AttentionBoostPage() {
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {seg.drivers.slice(0, 4).map((driver) => (
                         <span key={driver} className="badge badge-green">{driver}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {seg.evidence && seg.evidence.length > 0 && (
+                    <div className="mt-3 space-y-1 border-t border-border pt-2">
+                      <p className="text-[9px] uppercase tracking-[0.18em] text-muted">News evidence</p>
+                      {seg.evidence.slice(0, 2).map((item, idx) => (
+                        <a
+                          key={`${seg.id}-${idx}`}
+                          href={item.link || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block text-[10px] text-muted hover:text-primary line-clamp-2"
+                        >
+                          {item.source ? `[${item.source}] ` : ""}{item.title}
+                        </a>
                       ))}
                     </div>
                   )}
